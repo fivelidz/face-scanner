@@ -1,0 +1,1722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fivelidz Biomarker Analyzer - Full Debug</title>
+    
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <!-- MediaPipe Face Detection -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/face_mesh.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.3/drawing_utils.js" crossorigin="anonymous"></script>
+    
+    <!-- Face-API.js for demographics -->
+    <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.min.js"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Fallback loader -->
+    <script>
+        window.addEventListener('load', () => {
+            console.log('Page loaded, checking dependencies...');
+            if (typeof FaceMesh === 'undefined') {
+                console.error('MediaPipe failed to load from CDN');
+            }
+            if (typeof faceapi === 'undefined') {
+                console.error('Face-API failed to load from CDN');
+            }
+            if (typeof Chart === 'undefined') {
+                console.error('Chart.js failed to load from CDN');
+            }
+        });
+    </script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+        
+        /* Main container - 5 column layout flush together */
+        .analyzer-full {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background: #000;
+        }
+        
+        .main-content {
+            display: flex;
+            flex: 1;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+            gap: 0;
+        }
+        
+        .content-wrapper {
+            display: flex;
+            max-width: 1800px;
+            width: 100%;
+            gap: 0;
+        }
+        
+        /* Header */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(10, 10, 20, 0.95);
+            border-bottom: 2px solid rgba(0, 212, 255, 0.3);
+            padding: 20px 30px;
+            gap: 40px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #00ff88;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .nav-btn {
+            padding: 15px 35px;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(0, 255, 136, 0.1));
+            border: 2px solid rgba(0, 212, 255, 0.4);
+            border-radius: 12px;
+            color: #00d4ff;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .nav-btn:hover {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(0, 255, 136, 0.2));
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(0, 212, 255, 0.3);
+        }
+        
+        .nav-btn i {
+            font-size: 20px;
+        }
+        
+        /* Column 1: Algorithm Performance */
+        .left-metrics {
+            width: 280px;
+            background: rgba(10, 10, 20, 0.9);
+            border-right: 1px solid rgba(0, 212, 255, 0.2);
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        /* Column 2: Biomarkers */
+        .biomarkers {
+            width: 320px;
+            background: rgba(10, 10, 20, 0.95);
+            border-right: 1px solid rgba(0, 212, 255, 0.2);
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        /* Column 3: Video Feed */
+        .video-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background: #000;
+            min-width: 700px;
+        }
+        
+        .video-container {
+            position: relative;
+            width: 100%;
+            max-width: 640px;
+            max-height: 480px;
+            background: #000;
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        #live-video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+        
+        /* Camera error display */
+        .camera-error-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            min-height: 480px;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, rgba(10, 10, 20, 0.98) 0%, rgba(20, 10, 30, 0.98) 100%);
+            padding: 30px;
+            text-align: center;
+            z-index: 100;
+            border-radius: 15px;
+        }
+
+        .camera-error-container.visible {
+            display: flex;
+        }
+
+        .camera-error-icon {
+            font-size: 80px;
+            color: #ff4444;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(0.95); }
+        }
+
+        .camera-error-title {
+            font-size: 28px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #ff4444, #ff8888);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+        }
+
+        .camera-error-message {
+            font-size: 16px;
+            color: #bbb;
+            margin-bottom: 25px;
+            line-height: 1.6;
+            max-width: 500px;
+        }
+
+        .troubleshooting-list {
+            text-align: left;
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 0 auto;
+            max-width: 400px;
+        }
+
+        .troubleshooting-list h4 {
+            color: #00d4ff;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .troubleshooting-list ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .troubleshooting-list li {
+            color: #ddd;
+            font-size: 13px;
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .troubleshooting-list li:before {
+            content: "→";
+            color: #00d4ff;
+            position: absolute;
+            left: 0;
+        }
+
+        .retry-camera-btn {
+            margin-top: 20px;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #00d4ff, #00ff88);
+            border: none;
+            border-radius: 8px;
+            color: #000;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .retry-camera-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.4);
+        }
+
+        #tracking-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        /* Video Controls Overlay */
+        .video-controls {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+        
+        .control-btn {
+            width: 50px;
+            height: 50px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            font-size: 24px;
+        }
+        
+        .control-btn:hover {
+            background: rgba(0, 212, 255, 0.3);
+            border-color: #00d4ff;
+            transform: scale(1.1);
+        }
+        
+        .control-btn.active {
+            background: rgba(0, 212, 255, 0.4);
+            border-color: #00ff88;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.5);
+        }
+        
+        /* Record button */
+        .record-button {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 3px solid rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .record-button:hover {
+            transform: translateX(-50%) scale(1.1);
+            border-color: #00d4ff;
+            background: rgba(0, 212, 255, 0.2);
+        }
+        
+        .record-button.recording {
+            animation: pulse 1s infinite;
+            border-color: #ff0000;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.05); }
+        }
+        
+        .record-inner {
+            width: 40px;
+            height: 40px;
+            background: #ff0000;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+        
+        .record-button.recording .record-inner {
+            border-radius: 8px;
+            transform: scale(0.7);
+        }
+        
+        /* Below video - Face Detection & Demographics */
+        .below-video {
+            width: 100%;
+            max-width: 640px;
+        }
+        
+        .detection-panel {
+            background: rgba(10, 10, 20, 0.9);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .panel-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+        }
+        
+        .detection-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .detection-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .detection-label {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .detection-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+        }
+        
+        .confidence-bar {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff4444, #ffaa00, #00ff88);
+            transition: width 0.3s ease;
+        }
+        
+        /* Column 4: Charts */
+        .charts-section {
+            width: 320px;
+            background: rgba(10, 10, 20, 0.95);
+            border-left: 1px solid rgba(0, 212, 255, 0.2);
+            border-right: 1px solid rgba(0, 212, 255, 0.2);
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .chart-box {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .chart-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #00d4ff;
+            margin-bottom: 10px;
+        }
+        
+        .chart-container {
+            height: 200px;
+            position: relative;
+        }
+        
+        /* Column 5: Debug Log */
+        .debug-log {
+            width: 250px;
+            background: rgba(10, 10, 20, 0.9);
+            padding: 20px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .log-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #00ff88;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(0, 255, 136, 0.3);
+        }
+        
+        .log-entry {
+            font-size: 11px;
+            line-height: 1.6;
+            color: #aaa;
+            margin-bottom: 5px;
+            padding: 5px;
+            background: rgba(0, 0, 0, 0.3);
+            border-left: 2px solid transparent;
+        }
+        
+        .log-entry.info { border-left-color: #00d4ff; }
+        .log-entry.success { border-left-color: #00ff88; }
+        .log-entry.warning { border-left-color: #ffaa00; }
+        .log-entry.error { border-left-color: #ff4444; }
+        
+        /* Metric boxes */
+        .metric-box {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            min-height: 180px;
+        }
+        
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .metric-label {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #888;
+        }
+        
+        .metric-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #00d4ff;
+            line-height: 1;
+        }
+        
+        .metric-unit {
+            font-size: 16px;
+            color: #888;
+            margin-left: 5px;
+        }
+        
+        .metric-confidence {
+            margin-top: 10px;
+        }
+        
+        .confidence-text {
+            font-size: 11px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .metric-advice {
+            margin-top: 10px;
+            padding: 8px;
+            background: rgba(0, 212, 255, 0.1);
+            border-radius: 5px;
+            font-size: 11px;
+            color: #00d4ff;
+            height: 40px;
+            overflow-y: auto;
+        }
+        
+        /* Signal quality section */
+        .quality-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+        
+        .quality-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+        }
+        
+        .quality-label {
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .quality-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #00ff88;
+        }
+        
+        /* Mobile View Mode */
+        body.mobile-view {
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        
+        body.mobile-view .analyzer-full {
+            min-height: 100vh;
+        }
+        
+        body.mobile-view .main-content {
+            display: block;
+            padding: 0;
+            margin-top: 60px; /* Space for fixed header */
+        }
+        
+        body.mobile-view .content-wrapper {
+            display: flex;
+            flex-direction: column;
+            max-width: 100%;
+            padding-top: 0; /* No padding needed with sticky video */
+            position: relative;
+        }
+        
+        body.mobile-view .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            height: 60px;
+            padding: 10px 15px;
+            background: rgba(10, 10, 20, 0.98);
+        }
+        
+        body.mobile-view .logo h1 {
+            font-size: 18px;
+        }
+        
+        body.mobile-view .nav-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        
+        body.mobile-view .nav-buttons .nav-btn {
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+        
+        body.mobile-view .nav-buttons .nav-btn span {
+            display: none;
+        }
+        
+        body.mobile-view .nav-buttons .nav-btn i {
+            font-size: 18px;
+        }
+        
+        body.mobile-view #mobile-toggle {
+            display: block !important;
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 8px 15px;
+            font-size: 12px;
+        }
+        
+        /* Video section - sticky positioning for proper scrolling */
+        body.mobile-view .video-section {
+            position: sticky !important;
+            top: 60px !important;
+            left: 0 !important;
+            right: 0 !important;
+            width: 100% !important;
+            min-width: unset !important;
+            max-width: 100% !important;
+            height: 35vh !important;
+            padding: 0 !important; /* No padding on mobile */
+            background: #000 !important;
+            z-index: 500 !important;
+            border-bottom: 2px solid rgba(0, 212, 255, 0.3) !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        /* Auto-hide header on scroll */
+        body.mobile-view .header {
+            transition: transform 0.3s ease !important;
+        }
+        
+        body.mobile-view .header.hidden {
+            transform: translateY(-100%) !important;
+        }
+        
+        /* When header is hidden, video expands and sticks to top */
+        body.mobile-view .header.hidden ~ .main-content .video-section {
+            top: 0 !important;
+            height: 45vh !important; /* Bigger video when header hidden */
+        }
+        
+        /* Mobile title appears when header hidden */
+        .mobile-video-title {
+            display: none;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #00d4ff;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 10;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+        
+        body.mobile-view .header.hidden ~ .main-content .mobile-video-title {
+            display: block;
+        }
+        
+        body.mobile-view .video-container {
+            width: 100% !important;
+            height: calc(100% - 60px) !important; /* Account for overlay buttons */
+            position: relative !important;
+            margin: 0 !important;
+        }
+
+        /* Mobile-specific camera error styles */
+        body.mobile-view .camera-error-container {
+            min-height: 300px;
+            padding: 20px;
+        }
+
+        body.mobile-view .camera-error-icon {
+            font-size: 60px;
+        }
+
+        body.mobile-view .camera-error-title {
+            font-size: 22px;
+        }
+
+        body.mobile-view .camera-error-message {
+            font-size: 14px;
+        }
+
+        body.mobile-view .troubleshooting-list {
+            max-width: 100%;
+            padding: 15px;
+        }
+
+        body.mobile-view .troubleshooting-list h4 {
+            font-size: 14px;
+        }
+
+        body.mobile-view .troubleshooting-list li {
+            font-size: 12px;
+        }
+        
+        body.mobile-view #live-video,
+        body.mobile-view #output-canvas,
+        body.mobile-view canvas {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: contain !important;
+            max-width: 100% !important;
+            max-height: 100% !important;
+        }
+        
+        /* Replace record button with camera flip on mobile */
+        body.mobile-view .record-button {
+            display: none !important;
+        }
+        
+        /* Camera flip button for mobile */
+        .camera-flip-btn {
+            display: none;
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            width: 50px;
+            height: 50px;
+            background: rgba(0, 212, 255, 0.2);
+            border: 2px solid rgba(0, 212, 255, 0.5);
+            border-radius: 50%;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            z-index: 10;
+        }
+        
+        body.mobile-view .camera-flip-btn {
+            display: flex !important;
+        }
+        
+        .camera-flip-btn:hover {
+            background: rgba(0, 212, 255, 0.3);
+            transform: rotate(180deg);
+        }
+        
+        .camera-flip-btn span {
+            color: #00d4ff;
+            font-size: 24px;
+        }
+        
+        body.mobile-view .video-controls {
+            top: 5px;
+            right: 5px;
+            gap: 5px;
+        }
+        
+        /* Hide mobile toggle in mobile view */
+        body.mobile-view .nav-btn[onclick*="toggleMobileView"] {
+            display: none !important;
+        }
+        
+        body.mobile-view .control-btn {
+            width: 35px;
+            height: 35px;
+            font-size: 18px;
+            padding: 5px;
+        }
+        
+        /* Reduce button area height for more video space */
+        body.mobile-view .video-controls-bottom {
+            height: 60px !important;
+            padding: 10px !important;
+        }
+        
+        body.mobile-view .overlay-toggles {
+            display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            gap: 5px;
+            padding: 5px;
+            margin-bottom: 10px;
+        }
+        
+        body.mobile-view .toggle-btn {
+            padding: 6px 12px;
+            font-size: 11px;
+            white-space: nowrap;
+        }
+        
+        /* Below-video should not exist on mobile - move panels to main scroll */
+        body.mobile-view .below-video {
+            display: none !important; /* Hide the below-video container */
+        }
+        
+        /* Move detection panels to main content flow on mobile */
+        body.mobile-view .detection-panel {
+            position: relative !important;
+            width: calc(100% - 20px) !important;
+            margin: 10px !important;
+            background: rgba(10, 10, 20, 0.95) !important;
+            border-radius: 15px !important;
+            padding: 15px !important;
+            display: block !important;
+        }
+        
+        body.mobile-view .below-video .detection-panel {
+            width: calc(100% - 20px);
+            margin: 0 10px 15px 10px;
+            display: block !important;
+        }
+        
+        /* Panels moved to mobile-content-area styling */
+        body.mobile-view .mobile-content-area > * {
+            width: calc(100% - 20px) !important;
+            border: none !important;
+            margin: 0 10px 20px 10px !important;
+            background: rgba(10, 10, 20, 0.95) !important;
+            border-radius: 15px !important;
+            padding: 15px !important;
+            position: relative !important;
+            display: block !important;
+            max-width: 100% !important;
+        }
+        
+        body.mobile-view .mobile-content-area .detection-panel {
+            width: calc(100% - 20px) !important;
+            margin: 0 10px 15px 10px !important;
+        }
+        
+        /* Ensure first panel has enough top margin */
+        body.mobile-view .left-metrics:first-child {
+            margin-top: 20px;
+        }
+        
+        body.mobile-view .metric-box {
+            margin-bottom: 15px;
+            min-height: auto; /* Remove min-height for mobile */
+        }
+        
+        body.mobile-view .metric-value {
+            font-size: 28px;
+        }
+        
+        body.mobile-view .chart-container {
+            height: 150px;
+        }
+        
+        /* Mobile-specific face detection panel - inside scrollable area */
+        body.mobile-view .mobile-face-info {
+            display: none !important; /* Hide this, use regular panels instead */
+        }
+        
+        /* No face detected message for mobile */
+        .mobile-no-face-message {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            color: #fff;
+            z-index: 100;
+        }
+        
+        body.mobile-view .mobile-no-face-message {
+            display: block;
+        }
+        
+        body.mobile-view .mobile-no-face-message.hidden {
+            display: none;
+        }
+        
+        body.mobile-view .mobile-face-info .info-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            font-size: 11px;
+        }
+        
+        body.mobile-view .mobile-face-info .info-item {
+            text-align: center;
+        }
+        
+        body.mobile-view .mobile-face-info .info-label {
+            color: #888;
+            font-size: 9px;
+            text-transform: uppercase;
+        }
+        
+        body.mobile-view .mobile-face-info .info-value {
+            color: #00d4ff;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        /* Hide desktop elements in mobile view */
+        body.mobile-view .detection-panel {
+            background: rgba(10, 10, 20, 0.95);
+            margin-bottom: 15px;
+        }
+        
+        /* Mobile-only content area */
+        .mobile-content-area {
+            display: none;
+        }
+        
+        body.mobile-view .mobile-content-area {
+            display: block !important;
+            position: relative !important;
+            width: 100% !important;
+            padding: 10px 0 50px 0 !important;
+            background: #0a0a14 !important;
+        }
+        
+        /* Desktop panels are moved to mobile-content-area, not hidden */
+        
+        /* Hide mobile notice when in mobile mode */
+        body.mobile-view #mobile-notice {
+            display: none !important;
+        }
+        
+        /* Hide mobile toggle button when in mobile mode */
+        body.mobile-view #mobile-toggle {
+            display: none !important;
+        }
+        
+        /* Mobile-only elements */
+        .mobile-scroll-content {
+            display: none;
+        }
+        
+        .mobile-face-info {
+            display: none;
+        }
+        
+        /* Responsive breakpoint for auto-switch */
+        @media (max-width: 768px) {
+            /* Auto-apply mobile layout on small screens/zoom */
+            body {
+                overflow-x: hidden;
+            }
+            
+            .analyzer-full {
+                display: flex;
+                flex-direction: column;
+                min-height: 100vh;
+            }
+            
+            /* Keep header fixed at top */
+            .header {
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                z-index: 1000 !important;
+                height: 60px !important;
+            }
+            
+            .main-content {
+                display: block !important;
+                padding: 0 !important;
+                margin-top: 60px !important; /* Space for fixed header */
+            }
+            
+            .content-wrapper {
+                flex-direction: column !important;
+                max-width: 100% !important;
+                gap: 0 !important;
+            }
+            
+            /* Video section fixed below header */
+            .video-section {
+                position: fixed !important;
+                top: 60px !important; /* Below header */
+                left: 0 !important;
+                right: 0 !important;
+                width: 100% !important;
+                min-width: unset !important;
+                max-width: 100% !important;
+                height: 45vh !important;
+                z-index: 999 !important;
+                background: #000 !important;
+                border-bottom: 2px solid rgba(0, 212, 255, 0.3) !important;
+            }
+            
+            /* Add spacer for fixed video - but not in mobile mode */
+            body:not(.mobile-view) .content-wrapper::before {
+                content: '';
+                display: block;
+                height: 45vh;
+                width: 100%;
+            }
+            
+            /* Remove spacer in mobile mode */
+            body.mobile-view .content-wrapper::before {
+                display: none !important;
+            }
+            
+            /* Stack panels vertically below video */
+            .left-metrics,
+            .biomarkers,
+            .charts-section,
+            .debug-log,
+            .detection-panel {
+                width: calc(100% - 20px) !important;
+                max-width: 100% !important;
+                border: none !important;
+                border-radius: 15px !important;
+                margin: 0 10px 20px 10px !important;
+                padding: 20px !important;
+                background: rgba(10, 10, 20, 0.95) !important;
+                display: block !important;
+            }
+            
+            /* Adjust video container */
+            .video-container {
+                height: calc(100% - 80px) !important;
+            }
+            
+            .nav-buttons .nav-btn span {
+                display: none;
+            }
+            
+            .nav-buttons .nav-btn {
+                padding: 10px;
+            }
+            
+            .header {
+                padding: 10px;
+            }
+        }
+        
+        /* Loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+        
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .loader {
+            width: 80px;
+            height: 80px;
+            border: 3px solid rgba(0, 212, 255, 0.2);
+            border-top-color: #00d4ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Overlay toggle buttons */
+        .overlay-toggles {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .toggle-btn {
+            padding: 8px 15px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 20px;
+            color: #888;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+        
+        .toggle-btn.active {
+            background: rgba(0, 212, 255, 0.2);
+            border-color: #00d4ff;
+            color: #00d4ff;
+        }
+    </style>
+</head>
+<body>
+    <!-- Privacy Consent Modal -->
+    <div id="consent-modal" style="display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 10000; align-items: center; justify-content: center; padding: 20px; overflow-y: auto;">
+        <div style="max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; background: linear-gradient(135deg, #1a1a2e 0%, #0a0a14 100%); border: 2px solid rgba(0, 212, 255, 0.3); border-radius: 20px; padding: 30px 20px; margin: auto; position: relative;">
+            <h2 style="color: #00d4ff; margin-bottom: 15px; font-size: 24px; text-align: center;">
+                <span class="material-icons" style="vertical-align: middle; margin-right: 8px; font-size: 24px;">privacy_tip</span>
+                Privacy & Consent
+            </h2>
+            
+            <div style="color: #ddd; line-height: 1.6; margin-bottom: 20px; font-size: 14px;">
+                <p style="margin-bottom: 15px;">
+                    <strong style="color: #00ff88;">This application uses your camera to analyze facial features for health and demographic insights.</strong>
+                </p>
+                
+                <p style="margin-bottom: 15px;">
+                    By continuing, you acknowledge and consent to:
+                </p>
+                
+                <ul style="list-style: none; padding-left: 0; margin: 0;">
+                    <li style="margin-bottom: 8px; font-size: 13px;">
+                        <span class="material-icons" style="color: #00ff88; vertical-align: middle; font-size: 16px;">check_circle</span>
+                        <strong>100% Local:</strong> All processing in your browser, no uploads
+                    </li>
+                    <li style="margin-bottom: 8px; font-size: 13px;">
+                        <span class="material-icons" style="color: #00ff88; vertical-align: middle; font-size: 16px;">check_circle</span>
+                        <strong>No Data Collection:</strong> Nothing stored or transmitted
+                    </li>
+                    <li style="margin-bottom: 8px; font-size: 13px;">
+                        <span class="material-icons" style="color: #00ff88; vertical-align: middle; font-size: 16px;">check_circle</span>
+                        <strong>Camera Use:</strong> Facial landmarks & color analysis only
+                    </li>
+                    <li style="margin-bottom: 8px; font-size: 13px;">
+                        <span class="material-icons" style="color: #00ff88; vertical-align: middle; font-size: 16px;">check_circle</span>
+                        <strong>Demographics:</strong> Age, gender, emotion, ethnicity estimates
+                    </li>
+                </ul>
+                
+                <div style="background: rgba(255, 68, 68, 0.1); border: 1px solid rgba(255, 68, 68, 0.3); border-radius: 8px; padding: 10px; margin: 15px 0;">
+                    <p style="margin: 0; color: #ff8888; font-size: 12px;">
+                        <span class="material-icons" style="vertical-align: middle; font-size: 16px;">warning</span>
+                        <strong>Not Medical Advice:</strong> Educational purposes only. Consult healthcare professionals.
+                    </p>
+                </div>
+                
+                <p style="margin-top: 10px; font-size: 11px; color: #888;">
+                    GDPR/CCPA/BIPA compliant - all processing local, no data retained.
+                </p>
+            </div>
+            
+            <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                <button onclick="acceptConsent()" style="padding: 10px 25px; background: linear-gradient(135deg, #00d4ff, #00ff88); border: none; border-radius: 20px; color: #000; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.3s; flex: 1; min-width: 120px;">
+                    <span class="material-icons" style="vertical-align: middle; margin-right: 3px; font-size: 18px;">check</span>
+                    Accept
+                </button>
+                <button onclick="declineConsent()" style="padding: 10px 25px; background: transparent; border: 2px solid #ff4444; border-radius: 20px; color: #ff4444; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.3s; flex: 1; min-width: 120px;">
+                    <span class="material-icons" style="vertical-align: middle; margin-right: 3px; font-size: 18px;">close</span>
+                    Decline
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loader"></div>
+        <div style="margin-top: 20px; font-size: 16px; color: #00d4ff;">Initializing Fivelidz Analyzer...</div>
+    </div>
+    
+    <!-- Simple Countdown Timer (Mobile Only) -->
+    <div id="mobile-countdown" style="display: none; position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; background: rgba(0, 0, 0, 0.8); padding: 10px 20px; border-radius: 20px; font-size: 14px; color: #00ff88;">
+        Starting in <span id="countdown-number">3</span>...
+    </div>
+    
+    <!-- Main Analyzer -->
+    <div class="analyzer-full">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <span style="font-size: 32px;">🧬</span>
+                <h1>Fivelidz Biomarker Analyzer</h1>
+            </div>
+            
+            <!-- Mobile redirect notice -->
+            <div id="mobile-notice" style="display: none; position: fixed; top: 70px; left: 50%; transform: translateX(-50%); background: rgba(0, 212, 255, 0.2); border: 2px solid #00d4ff; padding: 15px 20px; border-radius: 10px; z-index: 1000; text-align: center; max-width: 300px;">
+                <p style="margin: 0 0 10px 0; color: #fff;">📱 Mobile version available!</p>
+                <a href="mobile-analyzer.html" style="display: inline-block; padding: 8px 20px; background: #00d4ff; color: #000; text-decoration: none; border-radius: 5px; font-weight: 600;">Open Mobile Version</a>
+                <button onclick="document.getElementById('mobile-notice').style.display='none'" style="display: block; margin: 10px auto 0; background: transparent; border: 1px solid #888; color: #888; padding: 5px 15px; border-radius: 5px; cursor: pointer;">Continue to Desktop</button>
+            </div>
+            
+            <div class="nav-buttons">
+                <a href="methodology.html" class="nav-btn">
+                    <i class="material-icons">science</i>
+                    <span>Methodology</span>
+                </a>
+                <a href="biomarker-guide.html" class="nav-btn">
+                    <i class="material-icons">biotech</i>
+                    <span>Biomarker Guide</span>
+                </a>
+                <a href="accuracy.html" class="nav-btn">
+                    <i class="material-icons">analytics</i>
+                    <span>Accuracy Guide</span>
+                </a>
+                <a href="export.html" class="nav-btn">
+                    <i class="material-icons">download</i>
+                    <span>Export Data</span>
+                </a>
+                <a href="https://sahha.ai/" target="_blank" class="nav-btn" style="background: linear-gradient(135deg, rgba(118, 75, 162, 0.2), rgba(0, 255, 136, 0.2)); border-color: rgba(118, 75, 162, 0.5);">
+                    <i class="material-icons">api</i>
+                    <span>Biomarker APIs</span>
+                </a>
+                <button class="nav-btn" id="mobile-toggle" style="background: linear-gradient(135deg, rgba(255, 68, 68, 0.2), rgba(255, 170, 0, 0.2)); border-color: rgba(255, 170, 0, 0.5); cursor: pointer; transition: all 0.3s;">
+                    <i class="material-icons">smartphone</i>
+                    <span id="mobile-toggle-text">Mobile View</span>
+                </button>
+            </div>
+        </header>
+        
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <div class="content-wrapper">
+        
+                <!-- Column 1: Algorithm Performance -->
+                <div class="left-metrics">
+            <div class="panel-title">Signal Quality Metrics</div>
+            <div class="quality-grid">
+                <div class="quality-item">
+                    <span class="quality-label">Motion</span>
+                    <span class="quality-value" id="motion-score">0%</span>
+                </div>
+                <div class="quality-item">
+                    <span class="quality-label">Lighting</span>
+                    <span class="quality-value" id="lighting-score">0%</span>
+                </div>
+                <div class="quality-item">
+                    <span class="quality-label">Face Stability</span>
+                    <span class="quality-value" id="stability-score">0%</span>
+                </div>
+                <div class="quality-item">
+                    <span class="quality-label">ROI Coverage</span>
+                    <span class="quality-value" id="roi-coverage">0%</span>
+                </div>
+            </div>
+            
+            <div class="panel-title" style="margin-top: 30px;">Algorithm Performance</div>
+            <div class="quality-grid">
+                <div class="quality-item">
+                    <span class="quality-label">FPS</span>
+                    <span class="quality-value" id="fps-counter">0</span>
+                </div>
+                <div class="quality-item">
+                    <span class="quality-label">Latency</span>
+                    <span class="quality-value" id="latency">0ms</span>
+                </div>
+                <div class="quality-item">
+                    <span class="quality-label">Algorithm</span>
+                    <span class="quality-value" style="font-size: 12px;">FFT+Peak</span>
+                </div>
+                <div class="quality-item">
+                    <span class="quality-label">Filter</span>
+                    <span class="quality-value" style="font-size: 12px;">Butterworth</span>
+                </div>
+                <div class="quality-item">
+                    <span class="quality-label">Window</span>
+                    <span class="quality-value" id="window-size">5s</span>
+                </div>
+                <div class="quality-item">
+                    <span class="quality-label">Sample Rate</span>
+                    <span class="quality-value">30Hz</span>
+                </div>
+                <div class="quality-item">
+                    <span class="quality-label">Buffer</span>
+                    <span class="quality-value" id="buffer-size">0/150</span>
+                </div>
+                <div class="quality-item">
+                    <span class="quality-label">SNR</span>
+                    <span class="quality-value" id="snr-value">-- dB</span>
+                </div>
+            </div>
+            
+            <div class="panel-title" style="margin-top: 30px;">Channel Analysis</div>
+            <div class="quality-grid">
+                <div class="quality-item">
+                    <span class="quality-label">Red Avg</span>
+                    <span class="quality-value" id="red-avg">0</span>
+                </div>
+                <div class="quality-item">
+                    <span class="quality-label">Green Avg</span>
+                    <span class="quality-value" id="green-avg">0</span>
+                </div>
+                <div class="quality-item">
+                    <span class="quality-label">Blue Avg</span>
+                    <span class="quality-value" id="blue-avg">0</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Column 2: Biomarkers -->
+        <div class="biomarkers">
+            <div class="panel-title">Vital Signs</div>
+            
+            <div class="metric-box">
+                <div class="metric-header">
+                    <span class="metric-label">Heart Rate</span>
+                </div>
+                <div>
+                    <span class="metric-value" id="hr-value">--</span>
+                    <span class="metric-unit">BPM</span>
+                </div>
+                <div class="metric-confidence">
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" id="hr-confidence" style="width: 0%"></div>
+                    </div>
+                    <div class="confidence-text">Confidence: <span id="hr-conf-text">0%</span></div>
+                </div>
+                <div class="metric-advice" id="hr-advice">Waiting for signal...</div>
+            </div>
+            
+            <div class="metric-box">
+                <div class="metric-header">
+                    <span class="metric-label">HRV (RMSSD)</span>
+                </div>
+                <div>
+                    <span class="metric-value" id="hrv-value">--</span>
+                    <span class="metric-unit">ms</span>
+                </div>
+                <div class="metric-confidence">
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" id="hrv-confidence" style="width: 0%"></div>
+                    </div>
+                    <div class="confidence-text">Confidence: <span id="hrv-conf-text">0%</span></div>
+                </div>
+                <div class="metric-advice" id="hrv-advice">Waiting for signal...</div>
+            </div>
+            
+            <div class="metric-box">
+                <div class="metric-header">
+                    <span class="metric-label">Respiratory Rate</span>
+                </div>
+                <div>
+                    <span class="metric-value" id="rr-value">--</span>
+                    <span class="metric-unit">BPM</span>
+                </div>
+                <div class="metric-confidence">
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" id="rr-confidence" style="width: 0%"></div>
+                    </div>
+                    <div class="confidence-text">Confidence: <span id="rr-conf-text">0%</span></div>
+                </div>
+                <div class="metric-advice" id="rr-advice">Waiting for signal...</div>
+            </div>
+            
+            <div class="metric-box">
+                <div class="metric-header">
+                    <span class="metric-label">Stress Level</span>
+                </div>
+                <div>
+                    <span class="metric-value" id="stress-value" style="font-size: 24px;">--</span>
+                </div>
+                <div class="metric-confidence">
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" id="stress-confidence" style="width: 0%"></div>
+                    </div>
+                    <div class="confidence-text">Based on HRV analysis</div>
+                </div>
+                <div class="metric-advice" id="stress-advice">Calculating...</div>
+            </div>
+        </div>
+        
+        <!-- Column 3: Video Feed -->
+        <div class="video-section">
+            <!-- Mobile title shown when header hidden -->
+            <div class="mobile-video-title">Fivelidz Bio Analyzer</div>
+            
+            <div class="video-container">
+                <video id="live-video" autoplay playsinline muted></video>
+                <canvas id="tracking-overlay"></canvas>
+
+                <!-- Camera error display -->
+                <div class="camera-error-container" id="camera-error-display">
+                    <span class="material-icons camera-error-icon">videocam_off</span>
+                    <h3 class="camera-error-title">Camera Not Available</h3>
+                    <p class="camera-error-message">Unable to access your camera. Please check the troubleshooting steps below.</p>
+
+                    <div class="troubleshooting-list">
+                        <h4>Troubleshooting Steps:</h4>
+                        <ul>
+                            <li>Ensure your camera is not being used by another application</li>
+                            <li>Grant camera permissions when prompted by your browser</li>
+                            <li>Check that your webcam is properly connected and working</li>
+                            <li>Try refreshing the page (Ctrl/Cmd + R)</li>
+                            <li>Clear your browser cache (Settings → Privacy → Clear browsing data)</li>
+                            <li>Try using an incognito/private browsing window</li>
+                            <li>Check browser settings: Settings → Privacy → Site Settings → Camera</li>
+                            <li>Restart your browser or try a different browser</li>
+                        </ul>
+                    </div>
+
+                    <button class="retry-camera-btn" onclick="window.location.reload()">
+                        <span class="material-icons" style="vertical-align: middle; margin-right: 5px;">refresh</span>
+                        Retry Camera Access
+                    </button>
+                </div>
+
+                <!-- Video controls -->
+                <div class="video-controls">
+                    <button class="control-btn active" id="toggle-mesh" title="Face Mesh">
+                        <span class="material-icons">face_retouching_natural</span>
+                    </button>
+                    <button class="control-btn active" id="toggle-roi" title="ROI Regions">
+                        <span class="material-icons">crop_free</span>
+                    </button>
+                    <button class="control-btn" id="toggle-landmarks" title="Landmarks">
+                        <span class="material-icons">scatter_plot</span>
+                    </button>
+                    <button class="control-btn" id="toggle-continuous" title="Continuous Mode">
+                        <span class="material-icons">all_inclusive</span>
+                    </button>
+                </div>
+                
+                <!-- Record button (desktop) / Camera flip (mobile) -->
+                <button class="record-button" id="record-button">
+                    <div class="record-inner"></div>
+                </button>
+                
+                <!-- Camera flip button for mobile -->
+                <button class="camera-flip-btn" id="camera-flip-btn" title="Switch Camera">
+                    <span class="material-icons">flip_camera_ios</span>
+                </button>
+                
+                <!-- No face message for mobile -->
+                <div class="mobile-no-face-message hidden" id="mobile-no-face-msg">
+                    <span class="material-icons" style="font-size: 48px; color: #00d4ff; display: block; margin-bottom: 10px;">face</span>
+                    <p style="font-size: 16px; margin-bottom: 10px;">No face detected</p>
+                    <p style="font-size: 14px; color: #888;">Hold phone at arm's length from your face</p>
+                </div>
+            </div>
+            
+            <!-- Overlay toggles -->
+            <div class="overlay-toggles">
+                <button class="toggle-btn active" id="btn-mesh">Face Mesh</button>
+                <button class="toggle-btn active" id="btn-roi">ROI Regions</button>
+                <button class="toggle-btn" id="btn-landmarks">Key Points</button>
+                <button class="toggle-btn" id="btn-eyes">Eye Tracking</button>
+                <button class="toggle-btn" id="btn-contours">Contours</button>
+                <button class="toggle-btn" id="btn-eye-spotlight" style="background: linear-gradient(135deg, rgba(255, 0, 255, 0.2), rgba(0, 212, 255, 0.2)); border-color: rgba(255, 0, 255, 0.5);">👁️ Gaze Tracking</button>
+            </div>
+            
+            <!-- Below video panels -->
+            <div class="below-video">
+                <!-- Face Detection Panel -->
+                <div class="detection-panel">
+                    <div class="panel-title">Face Detection</div>
+                    <div class="detection-grid">
+                        <div class="detection-item">
+                            <span class="detection-label">Status</span>
+                            <span class="detection-value" id="face-status">Waiting...</span>
+                        </div>
+                        <div class="detection-item">
+                            <span class="detection-label">Confidence</span>
+                            <span class="detection-value" id="face-confidence">-</span>
+                            <div class="confidence-bar">
+                                <div class="confidence-fill" id="face-conf-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="detection-item">
+                            <span class="detection-label">Landmarks</span>
+                            <span class="detection-value" id="landmark-count">-</span>
+                        </div>
+                        <div class="detection-item">
+                            <span class="detection-label">Tracking</span>
+                            <span class="detection-value" id="tracking-status">-</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Demographics Panel -->
+                <div class="detection-panel">
+                    <div class="panel-title">Demographics</div>
+                    <div class="detection-grid">
+                        <div class="detection-item">
+                            <span class="detection-label">Age</span>
+                            <span class="detection-value" id="age-value">-</span>
+                            <span class="confidence-text" id="age-conf-text" style="font-size: 11px; color: #888;">Conf: 0%</span>
+                            <div class="confidence-bar">
+                                <div class="confidence-fill" id="age-conf" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="detection-item">
+                            <span class="detection-label">Gender</span>
+                            <span class="detection-value" id="gender-value">-</span>
+                            <span class="confidence-text" id="gender-conf-text" style="font-size: 11px; color: #888;">Conf: 0%</span>
+                            <div class="confidence-bar">
+                                <div class="confidence-fill" id="gender-conf" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="detection-item">
+                            <span class="detection-label">Expression</span>
+                            <span class="detection-value" id="expression-value">-</span>
+                            <span class="confidence-text" id="expression-conf-text" style="font-size: 11px; color: #888;">Conf: 0%</span>
+                            <div class="confidence-bar">
+                                <div class="confidence-fill" id="expression-conf" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="detection-item">
+                            <span class="detection-label">Ethnicity</span>
+                            <span class="detection-value" id="ethnicity-value">-</span>
+                            <span class="confidence-text" id="ethnicity-conf-text" style="font-size: 11px; color: #888;">Conf: 0%</span>
+                            <div class="confidence-bar">
+                                <div class="confidence-fill" id="ethnicity-conf" style="width: 0%"></div>
+                            </div>
+                            <div id="skin-tone-info" style="font-size: 10px; margin-top: 5px; color: #888;"></div>
+                            <div id="analysis-basis" style="font-size: 9px; margin-top: 3px; color: #666;"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Attribution -->
+                <div style="text-align: center; margin-top: 15px; padding: 15px; background: rgba(0, 0, 0, 0.5); border-radius: 10px; font-size: 14px; color: #888;">
+                    By Alexei - DevEx at <a href="https://sahha.ai" target="_blank" style="color: #00d4ff; text-decoration: none; font-weight: 600;">Sahha.ai</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile-only scrollable content area -->
+        <div class="mobile-content-area">
+            <!-- Content will be cloned here for mobile view -->
+        </div>
+        
+        <!-- Column 4: Charts -->
+        <div class="charts-section">
+            <div class="panel-title">Signal Analysis</div>
+            
+            <div class="chart-box">
+                <div class="chart-title">PPG Signal (Green Channel)</div>
+                <div class="chart-container">
+                    <canvas id="ppg-chart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-box">
+                <div class="chart-title">Frequency Spectrum</div>
+                <div class="chart-container">
+                    <canvas id="spectrum-chart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-box">
+                <div class="chart-title">Heart Rate Trend</div>
+                <div class="chart-container">
+                    <canvas id="hr-trend-chart"></canvas>
+                </div>
+            </div>
+            
+            <div class="metric-box">
+                <div class="panel-title">ROI Quality</div>
+                <div class="quality-grid">
+                    <div class="quality-item">
+                        <span class="quality-label">Forehead</span>
+                        <span class="quality-value" id="forehead-q">0%</span>
+                    </div>
+                    <div class="quality-item">
+                        <span class="quality-label">Left Cheek</span>
+                        <span class="quality-value" id="left-cheek-q">0%</span>
+                    </div>
+                    <div class="quality-item">
+                        <span class="quality-label">Right Cheek</span>
+                        <span class="quality-value" id="right-cheek-q">0%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+                <!-- Column 5: Debug Log -->
+                <div class="debug-log">
+            <div class="log-title">System Log</div>
+            <div id="log-container" style="max-height: 250px; overflow-y: auto; overflow-x: hidden; scrollbar-width: thin; scrollbar-color: #00d4ff #0a0a0a;">
+                <div class="log-entry info">System initialized</div>
+                <div class="log-entry info">Waiting for camera...</div>
+            </div>
+            
+            <div class="log-title" style="margin-top: 30px;">Real-time Metrics</div>
+            <div style="font-size: 11px; line-height: 1.8;">
+                <div>Frame Delta: <span id="frame-delta" style="color: #00d4ff;">0ms</span></div>
+                <div>Processing: <span id="proc-time" style="color: #00d4ff;">0ms</span></div>
+                <div>Peak Freq: <span id="peak-freq" style="color: #00d4ff;">0 Hz</span></div>
+                <div>Peak Power: <span id="peak-power" style="color: #00d4ff;">0</span></div>
+                <div>Noise Floor: <span id="noise-floor" style="color: #00d4ff;">0</span></div>
+                <div>Signal Var: <span id="signal-var" style="color: #00d4ff;">0</span></div>
+                <div>Motion: <span id="motion-debug" style="color: #00d4ff;">0</span></div>
+                <div>Blink Rate: <span id="blink-rate" style="color: #00d4ff;">0/min</span></div>
+                <div>Gaze: <span id="gaze-dir" style="color: #00d4ff;">Center</span></div>
+                <div>Duration: <span id="duration" style="color: #00d4ff;">0s</span></div>
+                <div>Samples: <span id="samples-count" style="color: #00d4ff;">0</span></div>
+                </div>
+            </div> <!-- end content-wrapper -->
+        </div> <!-- end main-content -->
+        
+        <!-- Mobile scrollable content (hidden by default) -->
+        <div class="mobile-scroll-content">
+            <!-- This will be populated dynamically when mobile mode is activated -->
+        </div>
+        
+        <!-- Mobile face info bar -->
+        <div class="mobile-face-info">
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Heart Rate</div>
+                    <div class="info-value mobile-hr">--</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">HRV</div>
+                    <div class="info-value mobile-hrv">--</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Resp Rate</div>
+                    <div class="info-value mobile-rr">--</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Stress</div>
+                    <div class="info-value mobile-stress">--</div>
+                </div>
+            </div>
+        </div>
+    </div> <!-- end analyzer-full -->
+    
+    <!-- Eye tracking spotlight overlay -->
+    <div id="eye-spotlight-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 500; display: none;">
+        <!-- Spotlight beams -->
+        <div id="left-eye-spot" style="position: absolute; width: 200px; height: 200px; background: radial-gradient(circle, rgba(255,0,255,0.6) 0%, rgba(255,0,255,0.3) 30%, transparent 70%); border-radius: 50%; filter: blur(10px); transition: all 0.05s; mix-blend-mode: screen;"></div>
+        <div id="right-eye-spot" style="position: absolute; width: 200px; height: 200px; background: radial-gradient(circle, rgba(0,212,255,0.6) 0%, rgba(0,212,255,0.3) 30%, transparent 70%); border-radius: 50%; filter: blur(10px); transition: all 0.05s; mix-blend-mode: screen;"></div>
+        
+        <!-- Eye tracking circles (more precise) -->
+        <div id="left-eye-circle" style="position: absolute; width: 40px; height: 40px; border: 2px solid rgba(255,0,255,0.8); border-radius: 50%; transition: all 0.05s; box-shadow: 0 0 20px rgba(255,0,255,0.6);"></div>
+        <div id="right-eye-circle" style="position: absolute; width: 40px; height: 40px; border: 2px solid rgba(0,212,255,0.8); border-radius: 50%; transition: all 0.05s; box-shadow: 0 0 20px rgba(0,212,255,0.6);"></div>
+        
+        <!-- Gaze point indicator -->
+        <div id="gaze-point" style="position: absolute; width: 20px; height: 20px; background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.6) 40%, transparent 70%); border-radius: 50%; transition: all 0.1s; display: none;"></div>
+    </div>
+    
+    <!-- Hidden canvas for processing -->
+    <canvas id="processing-canvas" style="display: none;"></canvas>
+    
+    <!-- Mobile view will be handled by analyzer-full.js -->
+    
+    <script src="analyzer-full.js"></script>
+    
+    <script>
+        // Consent handling functions
+        function acceptConsent() {
+            // Store consent in session storage (not persistent)
+            sessionStorage.setItem('biomarkerConsent', 'accepted');
+            document.getElementById('consent-modal').style.display = 'none';
+            
+            // Initialize the analyzer after consent
+            if (typeof window.initializeAnalyzer === 'function') {
+                window.initializeAnalyzer();
+            }
+        }
+        
+        function declineConsent() {
+            // Redirect to methodology page or close
+            window.location.href = 'methodology.html';
+        }
+        
+        // Check consent on load
+        window.addEventListener('DOMContentLoaded', () => {
+            // Check if consent was already given this session
+            const consent = sessionStorage.getItem('biomarkerConsent');
+            if (consent === 'accepted') {
+                document.getElementById('consent-modal').style.display = 'none';
+            }
+            
+            // Mobile detection and redirect suggestion
+            // Don't show notice if already in mobile mode
+            if (document.body.classList.contains('mobile-view')) {
+                return;
+            }
+            
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const isSmallScreen = window.innerWidth <= 768;
+            
+            if (isMobile || isSmallScreen) {
+                // Show mobile notice
+                document.getElementById('mobile-notice').style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html><!-- Last updated: Fri 22 Aug 2025 09:32:47 AEST -->

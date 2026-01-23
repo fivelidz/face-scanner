@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fivelidz - Export Data Guide</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+icons" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        
+        .header h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #00d4ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .back-btn {
+            position: fixed;
+            top: 30px;
+            left: 30px;
+            padding: 12px 24px;
+            background: rgba(0, 212, 255, 0.1);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 10px;
+            color: #00d4ff;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+        
+        .back-btn:hover {
+            background: rgba(0, 212, 255, 0.2);
+            transform: translateX(-5px);
+        }
+        
+        .section {
+            background: rgba(10, 10, 20, 0.8);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 40px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .section h2 {
+            font-size: 32px;
+            color: #00ff88;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .code-block {
+            background: #000;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            position: relative;
+        }
+        
+        .code-block pre {
+            margin: 0;
+            color: #00ff88;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 8px 15px;
+            background: rgba(0, 212, 255, 0.2);
+            border: 1px solid rgba(0, 212, 255, 0.4);
+            border-radius: 5px;
+            color: #00d4ff;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+        
+        .copy-btn:hover {
+            background: rgba(0, 212, 255, 0.3);
+        }
+        
+        .export-option {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+        
+        .export-option:hover {
+            border-color: rgba(0, 212, 255, 0.4);
+            transform: translateX(5px);
+        }
+        
+        .export-option h3 {
+            color: #00d4ff;
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+        
+        .export-btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(0, 255, 136, 0.2));
+            border: 2px solid rgba(0, 212, 255, 0.4);
+            border-radius: 8px;
+            color: #00ff88;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        
+        .export-btn:hover {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(0, 255, 136, 0.3));
+            transform: translateY(-2px);
+        }
+        
+        .data-structure {
+            background: rgba(0, 0, 0, 0.3);
+            border-left: 4px solid #00ff88;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .field-list {
+            list-style: none;
+            padding-left: 20px;
+        }
+        
+        .field-list li {
+            padding: 8px 0;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+        
+        .field-list li strong {
+            color: #00d4ff;
+        }
+        
+        .warning-box {
+            background: rgba(255, 170, 0, 0.1);
+            border: 2px solid rgba(255, 170, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 30px 0;
+        }
+        
+        .warning-box h4 {
+            color: #ffaa00;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <a href="analyzer-full.html" class="back-btn">
+        <span class="material-icons">arrow_back</span>
+        Back to Analyzer
+    </a>
+    
+    <div class="container">
+        <div class="header">
+            <h1>💾 Data Export Guide</h1>
+            <p style="font-size: 20px; color: #888;">Access and Export Your Biomarker Data</p>
+        </div>
+        
+        <div class="section">
+            <h2>
+                <span class="material-icons">download</span>
+                Export Options
+            </h2>
+            
+            <div class="export-option">
+                <h3>📊 Live Session Data (Browser Console)</h3>
+                <p>Access real-time data directly from your browser's developer console while the analyzer is running.</p>
+                <div class="code-block">
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    <pre>// Open browser console (F12 or Cmd+Option+I)
+// Then run these commands:
+
+// Get current recording data
+analyzer.recordingData
+
+// Get PPG buffer
+analyzer.ppgBuffer
+
+// Get heart rate trend
+analyzer.hrTrend
+
+// Get all metrics
+{
+  heartRate: document.getElementById('hr-value').textContent,
+  hrv: document.getElementById('hrv-value').textContent,
+  respiratoryRate: document.getElementById('rr-value').textContent,
+  stress: document.getElementById('stress-value').textContent,
+  age: document.getElementById('age-value').textContent,
+  gender: document.getElementById('gender-value').textContent
+}</pre>
+                </div>
+            </div>
+            
+            <div class="export-option">
+                <h3>📁 Manual JSON Export</h3>
+                <p>Export your data as a JSON file by running this code in the browser console:</p>
+                <div class="code-block">
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    <pre>// Export all recorded data as JSON
+function exportData() {
+  const data = {
+    timestamp: new Date().toISOString(),
+    metrics: {
+      heartRate: document.getElementById('hr-value').textContent,
+      hrv: document.getElementById('hrv-value').textContent,
+      respiratoryRate: document.getElementById('rr-value').textContent,
+      stress: document.getElementById('stress-value').textContent
+    },
+    demographics: {
+      age: document.getElementById('age-value').textContent,
+      gender: document.getElementById('gender-value').textContent,
+      expression: document.getElementById('expression-value').textContent,
+      ethnicity: document.getElementById('ethnicity-value').textContent
+    },
+    quality: {
+      snr: document.getElementById('snr-value').textContent,
+      motion: document.getElementById('motion-score').textContent,
+      lighting: document.getElementById('lighting-score').textContent
+    },
+    rawData: window.analyzer ? analyzer.recordingData : []
+  };
+  
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `fivelidz-export-${Date.now()}.json`;
+  a.click();
+}
+
+exportData();</pre>
+                </div>
+            </div>
+            
+            <div class="export-option">
+                <h3>📈 CSV Export for Analysis</h3>
+                <p>Convert your data to CSV format for use in Excel, Google Sheets, or data analysis tools:</p>
+                <div class="code-block">
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    <pre>// Export as CSV
+function exportCSV() {
+  if (!window.analyzer || !analyzer.recordingData.length) {
+    alert('No data to export. Start recording first.');
+    return;
+  }
+  
+  let csv = 'Timestamp,PPG Signal,Red Channel,Green Channel,Blue Channel\\n';
+  
+  analyzer.recordingData.forEach(row => {
+    csv += `${row.timestamp},${row.ppg},${row.channels.red},${row.channels.green},${row.channels.blue}\\n`;
+  });
+  
+  const blob = new Blob([csv], {type: 'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `fivelidz-data-${Date.now()}.csv`;
+  a.click();
+}
+
+exportCSV();</pre>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>
+                <span class="material-icons">storage</span>
+                Data Structure
+            </h2>
+            
+            <div class="data-structure">
+                <h3 style="color: #00ff88; margin-bottom: 20px;">Recording Data Object</h3>
+                <ul class="field-list">
+                    <li><strong>timestamp</strong>: ISO 8601 datetime when measurement was taken</li>
+                    <li><strong>duration</strong>: Total recording duration in seconds</li>
+                    <li><strong>samples</strong>: Number of data points collected</li>
+                    <li><strong>metrics</strong>: Object containing:
+                        <ul class="field-list">
+                            <li><strong>heartRate</strong>: Beats per minute (BPM)</li>
+                            <li><strong>hrv</strong>: Heart rate variability (RMSSD in ms)</li>
+                            <li><strong>respiratoryRate</strong>: Breaths per minute</li>
+                            <li><strong>stress</strong>: Stress level (Low/Normal/Moderate/High)</li>
+                        </ul>
+                    </li>
+                    <li><strong>demographics</strong>: Object containing:
+                        <ul class="field-list">
+                            <li><strong>age</strong>: Estimated age ± 3 years</li>
+                            <li><strong>gender</strong>: Male/Female classification</li>
+                            <li><strong>expression</strong>: Dominant facial expression</li>
+                            <li><strong>ethnicity</strong>: Broad ethnic category</li>
+                        </ul>
+                    </li>
+                    <li><strong>rawData</strong>: Array of raw PPG measurements:
+                        <ul class="field-list">
+                            <li><strong>timestamp</strong>: Unix timestamp (ms)</li>
+                            <li><strong>ppg</strong>: Weighted PPG signal value</li>
+                            <li><strong>channels</strong>: RGB channel averages</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>
+                <span class="material-icons">code</span>
+                API Integration
+            </h2>
+            
+            <p style="margin-bottom: 20px;">Send your data to your own server or API endpoint:</p>
+            
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre>// Send data to your API
+async function sendToAPI() {
+  const data = {
+    timestamp: new Date().toISOString(),
+    metrics: {
+      heartRate: document.getElementById('hr-value').textContent,
+      hrv: document.getElementById('hrv-value').textContent,
+      respiratoryRate: document.getElementById('rr-value').textContent,
+      stress: document.getElementById('stress-value').textContent
+    }
+  };
+  
+  try {
+    const response = await fetch('https://your-api.com/endpoint', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer YOUR_API_KEY'
+      },
+      body: JSON.stringify(data)
+    });
+    
+    if (response.ok) {
+      console.log('Data sent successfully');
+    } else {
+      console.error('Failed to send data');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
+
+sendToAPI();</pre>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>
+                <span class="material-icons">query_stats</span>
+                Data Analysis Examples
+            </h2>
+            
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                <pre>// Calculate average heart rate from session
+function getAverageHR() {
+  if (!window.analyzer || !analyzer.hrTrend.length) return 0;
+  
+  const sum = analyzer.hrTrend.reduce((a, b) => a + b, 0);
+  return Math.round(sum / analyzer.hrTrend.length);
+}
+
+// Find heart rate variability range
+function getHRVRange() {
+  // Get min and max HRV values from session
+  const hrvValues = analyzer.recordingData
+    .map(d => d.hrv)
+    .filter(v => v > 0);
+  
+  return {
+    min: Math.min(...hrvValues),
+    max: Math.max(...hrvValues),
+    avg: Math.round(hrvValues.reduce((a, b) => a + b) / hrvValues.length)
+  };
+}
+
+// Calculate session statistics
+function getSessionStats() {
+  return {
+    duration: analyzer.recordingData.length / 30, // seconds at 30fps
+    samples: analyzer.recordingData.length,
+    avgHeartRate: getAverageHR(),
+    hrvRange: getHRVRange(),
+    signalQuality: document.getElementById('snr-value').textContent
+  };
+}
+
+console.log(getSessionStats());</pre>
+            </div>
+        </div>
+        
+        <div class="warning-box">
+            <h4>
+                <span class="material-icons">privacy_tip</span>
+                Privacy & Data Security
+            </h4>
+            <ul style="line-height: 1.8; padding-left: 20px;">
+                <li>All processing happens locally in your browser</li>
+                <li>No data is sent to external servers unless you explicitly export it</li>
+                <li>Recording data is stored only in browser memory (RAM)</li>
+                <li>Data is cleared when you refresh or close the page</li>
+                <li>Demographics data should be handled with care and respect for privacy</li>
+                <li>Consider anonymizing data before sharing or storing</li>
+                <li>Follow GDPR/CCPA guidelines if collecting data from others</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>
+                <span class="material-icons">widgets</span>
+                Integration with Other Tools
+            </h2>
+            
+            <div class="export-option">
+                <h3>Python Analysis</h3>
+                <div class="code-block">
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    <pre>import json
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Load exported JSON file
+with open('fivelidz-export.json', 'r') as f:
+    data = json.load(f)
+
+# Convert to DataFrame
+df = pd.DataFrame(data['rawData'])
+df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
+
+# Plot PPG signal
+plt.figure(figsize=(12, 6))
+plt.plot(df['timestamp'], df['ppg'])
+plt.xlabel('Time')
+plt.ylabel('PPG Signal')
+plt.title('Fivelidz PPG Recording')
+plt.show()
+
+# Calculate statistics
+print(f"Average PPG: {df['ppg'].mean():.2f}")
+print(f"Signal variance: {df['ppg'].var():.2f}")
+print(f"Recording duration: {(df['timestamp'].max() - df['timestamp'].min()).total_seconds():.1f}s")</pre>
+                </div>
+            </div>
+            
+            <div class="export-option">
+                <h3>R Statistical Analysis</h3>
+                <div class="code-block">
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    <pre># Load JSON data in R
+library(jsonlite)
+library(ggplot2)
+
+# Read the exported file
+data <- fromJSON("fivelidz-export.json")
+
+# Convert to data frame
+df <- data.frame(
+  timestamp = as.POSIXct(data$rawData$timestamp/1000, origin="1970-01-01"),
+  ppg = data$rawData$ppg,
+  red = data$rawData$channels$red,
+  green = data$rawData$channels$green,
+  blue = data$rawData$channels$blue
+)
+
+# Plot the PPG signal
+ggplot(df, aes(x=timestamp, y=ppg)) +
+  geom_line(color="#00ff88") +
+  theme_dark() +
+  labs(title="Fivelidz PPG Signal", x="Time", y="PPG Value")
+
+# Perform spectral analysis
+spectrum(df$ppg, method="pgram")</pre>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>
+                <span class="material-icons">help</span>
+                Troubleshooting
+            </h2>
+            
+            <div style="background: rgba(0, 0, 0, 0.5); border-radius: 10px; padding: 20px;">
+                <h3 style="color: #00d4ff; margin-bottom: 20px;">Common Issues</h3>
+                <ul style="line-height: 2; padding-left: 20px;">
+                    <li><strong>No data to export:</strong> Ensure you've started recording and collected at least 60 samples</li>
+                    <li><strong>Console commands not working:</strong> Check that 'analyzer' object exists (refresh page if needed)</li>
+                    <li><strong>CSV has missing values:</strong> Some metrics require minimum recording duration (15+ seconds)</li>
+                    <li><strong>Browser blocks download:</strong> Check your browser's download settings and popup blocker</li>
+                    <li><strong>Data looks incorrect:</strong> Verify signal quality indicators are good (SNR >10dB)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function copyCode(button) {
+            const codeBlock = button.parentElement.querySelector('pre');
+            const text = codeBlock.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                button.textContent = 'Copied!';
+                button.style.background = 'rgba(0, 255, 136, 0.3)';
+                
+                setTimeout(() => {
+                    button.textContent = 'Copy';
+                    button.style.background = 'rgba(0, 212, 255, 0.2)';
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

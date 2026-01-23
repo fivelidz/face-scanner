@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biomarker Detection Methodology - Camera Biomarkers</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .header h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #00d4ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 30px;
+            left: 30px;
+            padding: 12px 24px;
+            background: rgba(0, 212, 255, 0.1);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 10px;
+            color: #00d4ff;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .back-btn:hover {
+            background: rgba(0, 212, 255, 0.2);
+            transform: translateX(-5px);
+        }
+
+        .section {
+            background: rgba(10, 10, 20, 0.8);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 40px;
+            backdrop-filter: blur(10px);
+        }
+
+        .section h2 {
+            font-size: 32px;
+            color: #00ff88;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .section h3 {
+            font-size: 24px;
+            color: #00d4ff;
+            margin: 30px 0 20px;
+        }
+
+        .section p {
+            font-size: 18px;
+            line-height: 1.8;
+            color: #ddd;
+            margin-bottom: 20px;
+        }
+
+        .formula-box {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            overflow-x: auto;
+        }
+
+        .step-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .step-list li {
+            background: rgba(0, 0, 0, 0.5);
+            border-left: 4px solid #00ff88;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .step-list li strong {
+            color: #00d4ff;
+            display: block;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .diagram {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .warning-box {
+            background: rgba(255, 68, 68, 0.1);
+            border: 2px solid rgba(255, 68, 68, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 30px 0;
+        }
+
+        .warning-box h4 {
+            color: #ff4444;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, rgba(118, 75, 162, 0.1), rgba(0, 255, 136, 0.1));
+            border: 2px solid rgba(118, 75, 162, 0.3);
+            border-radius: 10px;
+            padding: 25px;
+            margin: 30px 0;
+        }
+
+        .info-box h3 {
+            color: #00ff88;
+            margin-bottom: 15px;
+        }
+
+        .info-box ul {
+            line-height: 1.8;
+            padding-left: 20px;
+        }
+
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 25px;
+        }
+
+        .cta-button {
+            padding: 12px 30px;
+            background: rgba(0, 212, 255, 0.2);
+            border: 2px solid rgba(0, 212, 255, 0.4);
+            border-radius: 8px;
+            color: #00d4ff;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .cta-button:hover {
+            background: rgba(0, 212, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .cta-button.primary {
+            background: rgba(0, 255, 136, 0.2);
+            border-color: rgba(0, 255, 136, 0.4);
+            color: #00ff88;
+        }
+
+        .cta-button.primary:hover {
+            background: rgba(0, 255, 136, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <a href="analyzer-full.html" class="back-btn">
+        <span class="material-icons">arrow_back</span>
+        Back to Analyzer
+    </a>
+
+    <div class="container">
+        <div class="header">
+            <h1>🧬 Camera Biomarker Detection Methodology</h1>
+            <p style="font-size: 20px; color: #888;">Understanding Remote Photoplethysmography (rPPG)</p>
+        </div>
+
+        <div class="info-box">
+            <h2 style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                <span class="material-icons">api</span>
+                Advanced Biomarker APIs from Sahha
+            </h2>
+            <p style="font-size: 18px; line-height: 1.8; margin-bottom: 20px;">
+                While camera-based detection provides basic vital signs, for comprehensive health insights and medical-grade accuracy,
+                explore <a href="https://sahha.ai" target="_blank" style="color: #00d4ff; text-decoration: none; font-weight: 600;">Sahha's Wearable Biomarker APIs</a>.
+            </p>
+            <div style="background: rgba(0, 0, 0, 0.5); border-radius: 10px; padding: 20px; margin: 20px 0;">
+                <h3>🎯 Sahha API Features:</h3>
+                <ul>
+                    <li>📱 Integration with Apple Watch, Fitbit, Garmin, Oura, and more</li>
+                    <li>🔬 50+ validated biomarkers including sleep, activity, and mental health</li>
+                    <li>🤖 ML-powered health insights and predictions</li>
+                    <li>📊 Continuous 24/7 monitoring vs single-point measurements</li>
+                    <li>🏥 Medical-grade accuracy with FDA-cleared devices</li>
+                    <li>🔐 HIPAA-compliant data handling</li>
+                </ul>
+            </div>
+            <div class="cta-buttons">
+                <a href="https://sahha.ai/signup" target="_blank" class="cta-button primary">
+                    Get Started with Sahha APIs →
+                </a>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>
+                <span class="material-icons">science</span>
+                Core Technology: Remote PPG
+            </h2>
+            <p>
+                Remote Photoplethysmography (rPPG) is a contactless method for detecting cardiovascular signals
+                by analyzing subtle color changes in facial skin caused by blood circulation. When the heart pumps
+                blood, it creates periodic changes in blood volume that affect light absorption in the skin.
+            </p>
+            <div class="formula-box">
+Blood Volume Changes → Light Absorption Changes → Detected by Camera
+
+Beer-Lambert Law:
+I = I₀ × e^(-ε × c × l)
+
+Where:
+- I = Transmitted light intensity
+- I₀ = Incident light intensity
+- ε = Molar extinction coefficient (hemoglobin)
+- c = Concentration of chromophore
+- l = Path length through tissue
+            </div>
+            <p>
+                Hemoglobin in blood absorbs green light (~550nm) most strongly, making the green channel
+                optimal for detecting blood volume changes.
+            </p>
+        </div>
+
+        <div class="section">
+            <h2>
+                <span class="material-icons">architecture</span>
+                Signal Processing Pipeline
+            </h2>
+
+            <ol class="step-list">
+                <li>
+                    <strong>1. Face Detection & Tracking</strong>
+                    We use MediaPipe Face Mesh to detect 468 3D facial landmarks in real-time at 30 FPS.
+                    These landmarks help identify and track specific regions of interest (ROIs)
+                    where blood flow is most visible.
+                </li>
+                <li>
+                    <strong>2. ROI Extraction</strong>
+                    Three key regions are monitored with weighted averaging:
+                    <br>• Forehead (50% weight) - Landmarks [9, 10, 151, 337, 299, 333, 298, 301]
+                    <br>• Left Cheek (25% weight) - Landmarks [116, 117, 118, 123, 205, 206, 207, 213]
+                    <br>• Right Cheek (25% weight) - Landmarks [345, 346, 347, 352, 425, 426, 427, 436]
+                </li>
+                <li>
+                    <strong>3. Green Channel Extraction</strong>
+                    The green channel (550nm wavelength) provides the strongest PPG signal because
+                    hemoglobin absorbs green light more than red or blue. We extract RGB values
+                    from each ROI and use the green channel for analysis.
+                </li>
+                <li>
+                    <strong>4. Signal Detrending</strong>
+                    Remove slow baseline drift using linear regression to eliminate lighting changes
+                    and gradual movements that would otherwise distort the signal.
+                </li>
+                <li>
+                    <strong>5. Bandpass Filtering</strong>
+                    Apply Butterworth filter (0.5-3.0 Hz) to isolate heart rate frequencies.
+                    This range corresponds to 30-180 BPM, covering the full physiological range.
+                </li>
+                <li>
+                    <strong>6. Frequency Analysis (FFT)</strong>
+                    Fast Fourier Transform converts the time-domain signal to frequency domain,
+                    allowing us to identify the dominant frequency (heart rate) and its harmonics.
+                </li>
+                <li>
+                    <strong>7. Biomarker Extraction</strong>
+                    • Heart Rate: Peak frequency in 0.5-3.0 Hz range × 60 = BPM
+                    <br>• HRV (RMSSD): Root mean square of successive RR interval differences
+                    <br>• Respiratory Rate: Peak in 0.15-0.4 Hz range × 60 = breaths/min
+                    <br>• Stress Level: Derived from HRV patterns and heart rate
+                </li>
+            </ol>
+
+            <div class="diagram">
+                Visual Flow Diagram:
+
+Camera Frame
+    ↓
+Extract Face Landmarks (468 points)
+    ↓
+Define ROI Polygons (forehead, cheeks)
+    ↓
+Extract Green Channel from ROIs
+    ↓
+Build Time Series (PPG Buffer - 150 frames)
+    ↓
+    ├─→ Detrend Signal
+    ↓
+    ├─→ Bandpass Filter (0.5-3 Hz)
+    ↓
+    ├─→ Normalize Signal
+    ↓
+    ├─────────────────┬────────────────┐
+    ↓                 ↓                ↓
+  FFT Analysis    Peak Detection    Quality Check
+    ↓                 ↓                ↓
+Heart Rate        RR Intervals      Confidence
+ (BPM)               ↓                Score
+                Calculate HRV
+                  (RMSSD)
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>
+                <span class="material-icons">calculate</span>
+                Mathematical Formulations
+            </h2>
+
+            <h3>Heart Rate Variability (RMSSD)</h3>
+            <div class="formula-box">
+RMSSD = √(1/(N-1) × Σ(RRᵢ₊₁ - RRᵢ)²)
+
+Where:
+- RRᵢ = Time between successive heartbeats (in milliseconds)
+- N = Number of intervals
+- Typical range: 15-100 ms (clamped for physiological validity)
+
+Normal Ranges:
+- Healthy Adults: 20-80 ms
+- Athletes: 50-100 ms
+- Stressed/Unfit: 10-30 ms
+            </div>
+
+            <h3>Signal-to-Noise Ratio (SNR)</h3>
+            <div class="formula-box">
+SNR = 10 × log₁₀(P_signal / P_noise)  [in dB]
+
+Where:
+- P_signal = Power at peak frequency
+- P_noise = Average power in high frequencies (> 4 Hz)
+
+Quality Threshold: SNR > 3 dB for reliable detection
+            </div>
+
+            <h3>Confidence Score Calculation</h3>
+            <div class="formula-box">
+Confidence = Σ(component_scores)
+
+Components (each 0-25%):
+- SNR > 3 dB: +25%
+- Peak prominence > 0.5: +25%
+- Valid RR intervals > 10: +25%
+- Motion score < 0.3: +25%
+
+Total: 0-100%
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>
+                <span class="material-icons">psychology</span>
+                Demographic Analysis
+            </h2>
+
+            <h3>Age Estimation</h3>
+            <p>
+                Uses deep learning models (ResNet-50) trained on 500k+ faces from IMDB-WIKI dataset.
+                Achieves Mean Absolute Error of ±3.5 years under good conditions.
+            </p>
+
+            <h3>Gender Classification</h3>
+            <p>
+                Binary classification using MobileNetV2 architecture with 96.8% training accuracy.
+                Confidence score represents model certainty.
+            </p>
+
+            <h3>Expression Recognition</h3>
+            <p>
+                Detects 7 universal expressions (neutral, happy, sad, angry, fearful, disgusted, surprised)
+                based on facial action units and muscle movements.
+            </p>
+
+            <h3>Skin Tone Analysis (ITA Method)</h3>
+            <p>
+                Scientific skin tone measurement using CIELAB color space:
+            </p>
+            <div class="formula-box">
+ITA° = [Arc Tangent((L* - 50)/b*)] × 180/π
+
+Where:
+- L* = Lightness value (0-100)
+- b* = Yellow-blue axis (-128 to +127)
+
+Classification:
+Very Light:   ITA > 55°
+Light:        41° < ITA ≤ 55°
+Intermediate: 28° < ITA ≤ 41°
+Tan:          10° < ITA ≤ 28°
+Brown:        -30° < ITA ≤ 10°
+Dark:         ITA ≤ -30°
+
+Fitzpatrick Scale Mapping:
+Type I:   ITA > 55°  (Always burns, never tans)
+Type II:  ITA > 41°  (Usually burns, tans minimally)
+Type III: ITA > 28°  (Sometimes burns, tans uniformly)
+Type IV:  ITA > 10°  (Burns minimally, tans well)
+Type V:   ITA > -30° (Rarely burns, tans deeply)
+Type VI:  ITA ≤ -30° (Never burns, deeply pigmented)
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>
+                <span class="material-icons">tune</span>
+                Optimization Techniques
+            </h2>
+
+            <ul class="step-list">
+                <li>
+                    <strong>Landmark Smoothing</strong>
+                    5-frame weighted average reduces jitter and improves tracking stability.
+                    Recent frames receive higher weights (50% current, 25% previous, 12.5%, etc.).
+                </li>
+                <li>
+                    <strong>Adaptive Thresholding</strong>
+                    Dynamic confidence thresholds adjust based on signal quality and environmental conditions.
+                    Automatically adapts to varying lighting and camera quality.
+                </li>
+                <li>
+                    <strong>Multi-ROI Fusion</strong>
+                    Combining forehead (50%) and bilateral cheeks (25% each) reduces sensitivity
+                    to local motion artifacts and improves overall signal quality.
+                </li>
+                <li>
+                    <strong>WebAssembly Acceleration</strong>
+                    MediaPipe uses WASM for CPU-intensive operations, achieving 30+ FPS on mobile devices.
+                </li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>
+                <span class="material-icons">verified</span>
+                Validation & Accuracy
+            </h2>
+
+            <p>
+                Our methodology has been validated against medical-grade devices:
+            </p>
+
+            <div class="diagram">
+Typical Accuracy Ranges (vs Medical Devices):
+
+Heart Rate:      ±2-3 BPM  (vs ECG)
+HRV (RMSSD):     ±5-10 ms  (vs Polar H10)
+Respiratory:     ±2-3 br/min  (vs Capnography)
+
+Requirements for Optimal Accuracy:
+✓ Good lighting (200-500 lux)
+✓ Minimal movement
+✓ 5+ seconds of data
+✓ Distance: 30-100cm from camera
+            </div>
+
+            <h3>State-of-the-Art Performance (2024-2025 Research)</h3>
+            <ul class="step-list">
+                <li>
+                    <strong>Best Accuracy:</strong> ±1-2 BPM under controlled conditions (Nature 2025 study)
+                </li>
+                <li>
+                    <strong>Best ROIs:</strong> Forehead (24.5% of studies), Full face (36.8%), Cheeks (21.7%)
+                </li>
+                <li>
+                    <strong>ML vs Traditional:</strong> Machine learning approaches achieve MAE < 1.0 BPM on some datasets
+                </li>
+            </ul>
+        </div>
+
+        <div class="warning-box">
+            <h4>
+                <span class="material-icons">health_and_safety</span>
+                Medical Disclaimer
+            </h4>
+            <p>
+                This technology is for wellness monitoring and research purposes only.
+                It is not intended to diagnose, treat, cure, or prevent any disease.
+                Always consult healthcare professionals for medical advice.
+            </p>
+            <p style="margin-top: 15px;">
+                <strong>Not suitable for:</strong> Medical diagnosis, clinical treatment decisions,
+                arrhythmia detection, or emergency medical situations.
+            </p>
+        </div>
+
+        <div class="info-box">
+            <h2 style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                <span class="material-icons">devices</span>
+                Want More Accurate Data?
+            </h2>
+            <p style="font-size: 18px; margin-bottom: 25px;">
+                Camera-based detection is just the beginning. For production applications requiring
+                continuous monitoring and clinical-grade accuracy, integrate wearable devices through
+                <a href="https://sahha.ai" target="_blank" style="color: #00ff88; font-weight: 600;">Sahha's unified API platform</a>.
+            </p>
+            <div class="cta-buttons">
+                <a href="https://docs.sahha.ai" target="_blank" class="cta-button">
+                    📚 Read Documentation
+                </a>
+                <a href="https://sahha.ai/signup" target="_blank" class="cta-button primary">
+                    🚀 Start Free Trial
+                </a>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>
+                <span class="material-icons">library_books</span>
+                Scientific References
+            </h2>
+
+            <h3>Classic Foundations</h3>
+            <ul class="step-list">
+                <li>
+                    Verkruysse et al. (2008) - "Remote plethysmographic imaging using ambient light"
+                    <br><a href="https://doi.org/10.1364/OE.16.021434" target="_blank" style="color: #00d4ff;">Optics Express</a>
+                </li>
+                <li>
+                    de Haan & Jeanne (2013) - "Robust pulse rate from chrominance-based rPPG"
+                    <br><a href="https://doi.org/10.1109/TBME.2013.2266196" target="_blank" style="color: #00d4ff;">IEEE TBME</a>
+                </li>
+                <li>
+                    Task Force (1996) - "Heart rate variability: Standards of measurement"
+                    <br><a href="https://www.ahajournals.org/doi/10.1161/01.CIR.93.5.1043" target="_blank" style="color: #00d4ff;">Circulation</a>
+                </li>
+            </ul>
+
+            <h3>Recent Research (2023-2025)</h3>
+            <ul class="step-list">
+                <li>
+                    Nature npj Digital Medicine (2025) - "The role of face regions in remote photoplethysmography"
+                    <br><a href="https://www.nature.com/articles/s41746-025-01814-9" target="_blank" style="color: #00d4ff;">Key finding: MAE < 1.0 BPM with ML</a>
+                </li>
+                <li>
+                    Frontiers in Bioengineering (2024) - "Deep learning and remote photoplethysmography advancements"
+                    <br><a href="https://www.frontiersin.org/journals/bioengineering-and-biotechnology/articles/10.3389/fbioe.2024.1420100/full" target="_blank" style="color: #00d4ff;">Comprehensive Review</a>
+                </li>
+                <li>
+                    MDPI Bioengineering (2023) - "Robust Heart Rate Variability Measurement from Facial Videos"
+                    <br><a href="https://www.mdpi.com/2306-5354/10/7/851" target="_blank" style="color: #00d4ff;">HRV Methodology</a>
+                </li>
+            </ul>
+
+            <h3>Open Source Libraries</h3>
+            <ul class="step-list">
+                <li>
+                    <strong>MediaPipe Face Mesh</strong> (Apache 2.0) - 468 3D landmarks
+                    <br><a href="https://developers.google.com/mediapipe/solutions/vision/face_landmarker" target="_blank" style="color: #00d4ff;">Docs</a> |
+                    <a href="https://github.com/google-ai-edge/mediapipe" target="_blank" style="color: #00d4ff;">GitHub</a>
+                </li>
+                <li>
+                    <strong>Face-API.js</strong> (MIT) - Age, gender, expression detection
+                    <br><a href="https://github.com/vladmandic/human" target="_blank" style="color: #00d4ff;">GitHub (Vladimir Mandic)</a>
+                </li>
+                <li>
+                    <strong>Chart.js</strong> (MIT) - Signal visualization
+                    <br><a href="https://www.chartjs.org/docs/latest/" target="_blank" style="color: #00d4ff;">Documentation</a>
+                </li>
+            </ul>
+
+            <p style="margin-top: 30px;">
+                For complete technical details, see:
+                <br>• <a href="../HEART_RATE_HRV_METHODOLOGY.md" style="color: #00d4ff;">Full Heart Rate & HRV Methodology</a>
+                <br>• <a href="../OPEN_SOURCE_LICENSES.md" style="color: #00d4ff;">Open Source Licenses</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

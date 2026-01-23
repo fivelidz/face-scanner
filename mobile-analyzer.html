@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Fivelidz Bio Analyzer - Mobile</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a14;
+            color: #fff;
+            overflow-x: hidden;
+            position: relative;
+            min-height: 100vh;
+        }
+        
+        /* Header - Fixed at top */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: rgba(10, 10, 20, 0.98);
+            border-bottom: 1px solid rgba(0, 212, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+        
+        .header.hidden {
+            transform: translateY(-100%);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo h1 {
+            font-size: 16px;
+            background: linear-gradient(135deg, #00d4ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .desktop-link {
+            padding: 6px 12px;
+            background: rgba(0, 212, 255, 0.2);
+            border: 1px solid rgba(0, 212, 255, 0.5);
+            border-radius: 20px;
+            color: #00d4ff;
+            text-decoration: none;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+        
+        /* Main container */
+        .main-container {
+            padding-top: 50px; /* Space for header */
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        /* Video Section - Sticky */
+        .video-section {
+            position: sticky;
+            top: 50px;
+            width: 100%;
+            height: 40vh;
+            background: #000;
+            border-bottom: 2px solid rgba(0, 212, 255, 0.3);
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        
+        /* When header hidden, video expands and moves to top */
+        .header.hidden ~ .main-container .video-section {
+            top: 0;
+            height: 45vh;
+        }
+        
+        .video-container {
+            position: relative;
+            width: 100%;
+            height: calc(100% - 50px);
+            overflow: hidden;
+        }
+        
+        #live-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1); /* Mirror for selfie mode */
+        }
+        
+        #tracking-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            transform: scaleX(-1); /* Mirror overlay too */
+        }
+        
+        /* Video Controls */
+        .video-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 8px;
+            z-index: 10;
+        }
+        
+        .control-btn {
+            width: 36px;
+            height: 36px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .control-btn.active {
+            background: rgba(0, 212, 255, 0.3);
+            border-color: #00d4ff;
+        }
+        
+        .control-btn span {
+            color: #fff;
+            font-size: 18px;
+        }
+        
+        /* Camera Flip Button */
+        .camera-flip {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            width: 50px;
+            height: 50px;
+            background: rgba(0, 212, 255, 0.2);
+            border: 2px solid rgba(0, 212, 255, 0.5);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+        }
+        
+        .camera-flip span {
+            color: #00d4ff;
+            font-size: 24px;
+        }
+        
+        /* No Face Message */
+        .no-face-msg {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+        }
+        
+        .no-face-msg.show {
+            display: block;
+        }
+        
+        .no-face-msg .icon {
+            font-size: 48px;
+            color: #00d4ff;
+            margin-bottom: 10px;
+        }
+        
+        /* Control buttons bar */
+        .controls-bar {
+            height: 50px;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            gap: 8px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .toggle-btn {
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            color: #888;
+            font-size: 11px;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .toggle-btn.active {
+            background: rgba(0, 212, 255, 0.2);
+            border-color: #00d4ff;
+            color: #00d4ff;
+        }
+        
+        /* Scrollable Content Area */
+        .content-area {
+            position: relative;
+            background: #0a0a14;
+            padding: 15px 10px 60px 10px;
+            min-height: 60vh;
+        }
+        
+        /* Panels */
+        .panel {
+            background: rgba(10, 10, 20, 0.95);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+        }
+        
+        .panel-title {
+            font-size: 14px;
+            color: #00d4ff;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+        
+        /* Detection Grid */
+        .detection-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .detection-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px;
+            border-radius: 8px;
+        }
+        
+        .detection-label {
+            font-size: 10px;
+            color: #888;
+            text-transform: uppercase;
+        }
+        
+        .detection-value {
+            font-size: 16px;
+            color: #00ff88;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+        
+        /* Metric Cards */
+        .metric-card {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 3px solid #00d4ff;
+        }
+        
+        .metric-label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+        }
+        
+        .metric-value {
+            font-size: 24px;
+            color: #00ff88;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        
+        .metric-unit {
+            font-size: 12px;
+            color: #888;
+            margin-left: 4px;
+        }
+        
+        /* Charts */
+        .chart-container {
+            height: 120px;
+            margin-top: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 10px;
+        }
+        
+        /* Loading spinner */
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2000;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(0, 212, 255, 0.3);
+            border-top-color: #00d4ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Hide scrollbars but keep scrolling */
+        .controls-bar::-webkit-scrollbar {
+            display: none;
+        }
+        
+        /* Mobile title when header hidden */
+        .mobile-title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #00d4ff;
+            font-size: 12px;
+            font-weight: 600;
+            z-index: 10;
+            display: none;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+        
+        .header.hidden ~ .main-container .mobile-title {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <h1>Fivelidz Bio</h1>
+        </div>
+        <a href="analyzer-full.html" class="desktop-link">Desktop</a>
+    </header>
+    
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Video Section -->
+        <div class="video-section">
+            <div class="mobile-title">Fivelidz Bio Analyzer</div>
+            
+            <div class="video-container">
+                <video id="live-video" autoplay playsinline muted></video>
+                <canvas id="tracking-overlay"></canvas>
+                
+                <!-- Video Controls -->
+                <div class="video-controls">
+                    <button class="control-btn active" id="toggle-mesh" title="Mesh">
+                        <span class="material-icons">face_retouching_natural</span>
+                    </button>
+                    <button class="control-btn active" id="toggle-roi" title="ROI">
+                        <span class="material-icons">crop_free</span>
+                    </button>
+                    <button class="control-btn" id="toggle-landmarks" title="Points">
+                        <span class="material-icons">scatter_plot</span>
+                    </button>
+                </div>
+                
+                <!-- Camera Flip -->
+                <button class="camera-flip" id="camera-flip">
+                    <span class="material-icons">flip_camera_ios</span>
+                </button>
+                
+                <!-- No Face Message -->
+                <div class="no-face-msg" id="no-face-msg">
+                    <div class="material-icons icon">face</div>
+                    <div style="font-size: 14px;">No face detected</div>
+                    <div style="font-size: 12px; color: #888;">Hold phone at arm's length</div>
+                </div>
+            </div>
+            
+            <!-- Controls Bar -->
+            <div class="controls-bar">
+                <button class="toggle-btn active" id="btn-mesh">Mesh</button>
+                <button class="toggle-btn active" id="btn-roi">ROI</button>
+                <button class="toggle-btn" id="btn-landmarks">Points</button>
+                <button class="toggle-btn" id="btn-eyes">Eyes</button>
+                <button class="toggle-btn" id="btn-spotlight">Gaze</button>
+                <button class="toggle-btn active" id="btn-continuous">Continuous</button>
+            </div>
+        </div>
+        
+        <!-- Scrollable Content Area -->
+        <div class="content-area">
+            <!-- Face Detection Panel -->
+            <div class="panel">
+                <div class="panel-title">Face Detection</div>
+                <div class="detection-grid">
+                    <div class="detection-item">
+                        <div class="detection-label">Status</div>
+                        <div class="detection-value" id="face-status">Waiting...</div>
+                    </div>
+                    <div class="detection-item">
+                        <div class="detection-label">Confidence</div>
+                        <div class="detection-value" id="face-confidence">0%</div>
+                    </div>
+                    <div class="detection-item">
+                        <div class="detection-label">Landmarks</div>
+                        <div class="detection-value" id="landmark-count">0</div>
+                    </div>
+                    <div class="detection-item">
+                        <div class="detection-label">Tracking</div>
+                        <div class="detection-value" id="tracking-status">--</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Vital Signs Panel -->
+            <div class="panel">
+                <div class="panel-title">Vital Signs</div>
+                <div class="metric-card">
+                    <div class="metric-label">Heart Rate</div>
+                    <div>
+                        <span class="metric-value" id="hr-value">--</span>
+                        <span class="metric-unit">BPM</span>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">HRV (RMSSD)</div>
+                    <div>
+                        <span class="metric-value" id="hrv-value">--</span>
+                        <span class="metric-unit">ms</span>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Breathing Rate</div>
+                    <div>
+                        <span class="metric-value" id="rr-value">--</span>
+                        <span class="metric-unit">br/min</span>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Stress Level</div>
+                    <div>
+                        <span class="metric-value" id="stress-value">--</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Demographics Panel -->
+            <div class="panel">
+                <div class="panel-title">Demographics</div>
+                <div class="detection-grid">
+                    <div class="detection-item">
+                        <div class="detection-label">Age</div>
+                        <div class="detection-value" id="age-value">--</div>
+                    </div>
+                    <div class="detection-item">
+                        <div class="detection-label">Gender</div>
+                        <div class="detection-value" id="gender-value">--</div>
+                    </div>
+                    <div class="detection-item">
+                        <div class="detection-label">Expression</div>
+                        <div class="detection-value" id="expression-value">--</div>
+                    </div>
+                    <div class="detection-item">
+                        <div class="detection-label">Ethnicity</div>
+                        <div class="detection-value" id="ethnicity-value">--</div>
+                    </div>
+                </div>
+                <div id="skin-tone-info" style="font-size: 10px; margin-top: 10px; color: #888; padding: 0 10px;"></div>
+            </div>
+            
+            <!-- Signal Charts Panel -->
+            <div class="panel">
+                <div class="panel-title">Signal Analysis</div>
+                <div class="chart-container">
+                    <canvas id="ppg-chart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <canvas id="spectrum-chart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Info Panel -->
+            <div class="panel" style="text-align: center;">
+                <div style="font-size: 12px; color: #888;">
+                    By Alexei - DevEx at 
+                    <a href="https://sahha.ai" target="_blank" style="color: #00d4ff; text-decoration: none;">Sahha.ai</a>
+                </div>
+                <div style="margin-top: 10px;">
+                    <a href="methodology.html" style="color: #00ff88; text-decoration: none; font-size: 12px;">
+                        📚 View Methodology
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Loading Spinner -->
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+    </div>
+    
+    <!-- Load Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://unpkg.com/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="mobile-analyzer.js"></script>
+</body>
+</html>

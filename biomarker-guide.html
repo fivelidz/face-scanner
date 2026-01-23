@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biomarker Extraction Guide - Technical Documentation</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .header h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #00d4ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 20px;
+            color: #888;
+            margin-bottom: 30px;
+        }
+
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .nav-link {
+            padding: 10px 20px;
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 20px;
+            color: #00d4ff;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .nav-link:hover {
+            background: rgba(0, 212, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .toc {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+
+        .toc h2 {
+            color: #00ff88;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .toc ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .toc li {
+            margin-bottom: 10px;
+        }
+
+        .toc a {
+            color: #00d4ff;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+
+        .toc a:hover {
+            color: #00ff88;
+            transform: translateX(5px);
+        }
+
+        .section {
+            background: rgba(10, 10, 20, 0.8);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 40px;
+            backdrop-filter: blur(10px);
+        }
+
+        .section h2 {
+            font-size: 32px;
+            color: #00ff88;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .section h3 {
+            font-size: 24px;
+            color: #00d4ff;
+            margin: 30px 0 20px;
+        }
+
+        .section h4 {
+            font-size: 20px;
+            color: #ff00ff;
+            margin: 25px 0 15px;
+        }
+
+        .section p {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #ddd;
+            margin-bottom: 20px;
+        }
+
+        .formula-box {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+        }
+
+        .code-block {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            color: #00ff88;
+        }
+
+        .step-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .step-list li {
+            background: rgba(0, 0, 0, 0.5);
+            border-left: 4px solid #00ff88;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .step-list li strong {
+            color: #00d4ff;
+            display: block;
+            margin-bottom: 10px;
+            font-size: 17px;
+        }
+
+        .biomarker-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .biomarker-card h4 {
+            color: #00ff88;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .reference-list {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+
+        .reference-list h4 {
+            color: #ff00ff;
+            margin-bottom: 15px;
+        }
+
+        .reference-list ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .reference-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        .reference-list li:last-child {
+            border-bottom: none;
+        }
+
+        .accuracy-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .accuracy-table th {
+            background: rgba(0, 212, 255, 0.1);
+            color: #00d4ff;
+            padding: 15px;
+            text-align: left;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+        }
+
+        .accuracy-table td {
+            padding: 12px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #ddd;
+        }
+
+        .accuracy-table tr:nth-child(even) {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .warning-box {
+            background: rgba(255, 68, 68, 0.1);
+            border: 2px solid rgba(255, 68, 68, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 30px 0;
+        }
+
+        .warning-box h4 {
+            color: #ff4444;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-box {
+            background: rgba(0, 212, 255, 0.1);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 30px 0;
+        }
+
+        .info-box h4 {
+            color: #00d4ff;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 15px;
+            background: rgba(0, 212, 255, 0.2);
+            border: 2px solid rgba(0, 212, 255, 0.5);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #00d4ff;
+        }
+
+        .back-to-top:hover {
+            background: rgba(0, 212, 255, 0.3);
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📊 Biomarker Extraction Technical Guide</h1>
+            <p class="subtitle">Comprehensive Documentation of Camera-Based Vital Signs Detection</p>
+        </div>
+
+        <!-- Navigation -->
+        <div class="nav-links">
+            <a href="analyzer-full.html" class="nav-link">← Back to Analyzer</a>
+            <a href="methodology.html" class="nav-link">Methodology</a>
+            <a href="#references" class="nav-link">References</a>
+        </div>
+
+        <!-- Table of Contents -->
+        <div class="toc">
+            <h2>📚 Table of Contents</h2>
+            <ul>
+                <li><a href="#overview"><span class="material-icons">visibility</span> Overview & Scientific Basis</a></li>
+                <li><a href="#heart-rate"><span class="material-icons">favorite</span> Heart Rate Detection</a></li>
+                <li><a href="#hrv"><span class="material-icons">timeline</span> Heart Rate Variability (HRV)</a></li>
+                <li><a href="#respiratory"><span class="material-icons">air</span> Respiratory Rate</a></li>
+                <li><a href="#stress"><span class="material-icons">psychology</span> Stress Level Assessment</a></li>
+                <li><a href="#demographics"><span class="material-icons">face</span> Demographics & Skin Tone</a></li>
+                <li><a href="#technical"><span class="material-icons">code</span> Technical Implementation</a></li>
+                <li><a href="#accuracy"><span class="material-icons">analytics</span> Accuracy & Limitations</a></li>
+                <li><a href="#references"><span class="material-icons">library_books</span> Scientific References</a></li>
+            </ul>
+        </div>
+
+        <!-- Overview Section -->
+        <div class="section" id="overview">
+            <h2>
+                <span class="material-icons">visibility</span>
+                Overview & Scientific Basis
+            </h2>
+
+            <p>
+                This guide provides comprehensive technical documentation on how biomarkers are extracted from facial video
+                using remote photoplethysmography (rPPG) and computer vision techniques. The system analyzes subtle color
+                changes in facial skin caused by blood circulation to derive vital signs without physical contact.
+            </p>
+
+            <h3>Core Scientific Principle</h3>
+            <p>
+                When the heart pumps blood through the cardiovascular system, it creates periodic changes in blood volume
+                in the facial capillaries. These changes affect how light is absorbed and reflected by the skin, creating
+                measurable variations in skin color that are invisible to the naked eye but detectable through video analysis.
+            </p>
+
+            <div class="formula-box">
+                Beer-Lambert Law:
+                I = I₀ × e^(-ε × c × l)
+
+                Where:
+                - I = Transmitted light intensity
+                - I₀ = Incident light intensity
+                - ε = Molar extinction coefficient
+                - c = Concentration of chromophore (hemoglobin)
+                - l = Path length through tissue
+            </div>
+
+            <h3>Why Green Channel?</h3>
+            <div class="code-block">
+Red Channel:   Less sensitive to blood volume (more affected by lighting)
+Green Channel: Most sensitive to blood volume changes ✓
+Blue Channel:  Too noisy, affected by shadows
+            </div>
+
+            <p>
+                Hemoglobin in blood absorbs green light (around 550nm wavelength) more strongly than red or blue,
+                making it ideal for detecting blood volume changes.
+            </p>
+        </div>
+
+        <!-- Heart Rate Section -->
+        <div class="section" id="heart-rate">
+            <h2>
+                <span class="material-icons">favorite</span>
+                Heart Rate Detection
+            </h2>
+
+            <h3>Signal Extraction Process</h3>
+
+            <h4>Step 1: Define Regions of Interest (ROI)</h4>
+            <p>We extract signals from three facial regions with weighted averaging:</p>
+
+            <div class="biomarker-card">
+                <h4>Forehead Region (50% weight)</h4>
+                <p><strong>Landmark indices:</strong> [9, 10, 151, 337, 299, 333, 298, 301]</p>
+                <p>
+                    The forehead provides the strongest PPG signal due to:
+                </p>
+                <ul>
+                    <li>Minimal motion during normal activities</li>
+                    <li>Large flat surface area</li>
+                    <li>Rich superficial temporal artery perfusion</li>
+                    <li>Thin skin with good light penetration</li>
+                </ul>
+            </div>
+
+            <div class="biomarker-card">
+                <h4>Left Cheek (25% weight)</h4>
+                <p><strong>Landmark indices:</strong> [116, 117, 118, 123, 205, 206, 207, 213]</p>
+                <p>
+                    Secondary signal source providing:
+                </p>
+                <ul>
+                    <li>Facial artery perfusion</li>
+                    <li>Redundancy for signal validation</li>
+                    <li>Different vascular bed for averaging</li>
+                </ul>
+            </div>
+
+            <div class="biomarker-card">
+                <h4>Right Cheek (25% weight)</h4>
+                <p><strong>Landmark indices:</strong> [345, 346, 347, 352, 425, 426, 427, 436]</p>
+                <p>
+                    Tertiary signal for:
+                </p>
+                <ul>
+                    <li>Bilateral averaging to reduce noise</li>
+                    <li>Motion artifact detection</li>
+                    <li>Signal quality assessment</li>
+                </ul>
+            </div>
+
+            <h3>Processing Pipeline</h3>
+
+            <h4>Step 2: Extract Green Channel Values</h4>
+            <div class="code-block">
+// For each ROI, extract average green channel value
+for (let i = 0; i < pixels.length; i += 4) {
+    greenSum += pixels[i + 1]; // Green channel at index 1
+    pixelCount++;
+}
+averageGreen = greenSum / pixelCount;
+
+// Weight and combine signals from all ROIs
+weightedSignal = forehead * 0.5 + leftCheek * 0.25 + rightCheek * 0.25;
+            </div>
+
+            <h4>Step 3: Signal Detrending</h4>
+            <p>Remove slow baseline drift caused by lighting changes or movement:</p>
+            <div class="formula-box">
+y_detrended(t) = y(t) - (a × t + b)
+
+Where a (slope) and b (intercept) are computed using least squares:
+a = Σ((t - t̄)(y - ȳ)) / Σ((t - t̄)²)
+b = ȳ - a × t̄
+            </div>
+
+            <h4>Step 4: Bandpass Filtering</h4>
+            <p>Apply Butterworth filter to isolate heart rate frequencies:</p>
+            <div class="code-block">
+// Butterworth bandpass filter
+Passband: 0.5 Hz to 3.0 Hz
+Why: Human heart rate is typically 30-180 BPM (0.5-3.0 Hz)
+
+- Removes high-frequency noise
+- Removes low-frequency drift
+- Isolates cardiac frequency range
+            </div>
+
+            <h4>Step 5: FFT Analysis</h4>
+            <p>Convert time-domain signal to frequency domain to identify heart rate:</p>
+            <div class="formula-box">
+X(k) = Σ(n=0 to N-1) x(n) × e^(-j2πkn/N)
+
+// Find dominant frequency in HR range
+peakFrequency = findPeakInRange(powerSpectrum, 0.5, 3.0)
+
+// Convert to BPM
+heartRate = peakFrequency × 60
+            </div>
+
+            <h3>Signal Quality Metrics</h3>
+            <div class="code-block">
+SNR = 10 × log₁₀(P_signal / P_noise)
+
+Where:
+- P_signal = Power at peak frequency
+- P_noise = Average power in high frequencies (> 4 Hz)
+
+Confidence Score Components:
+- SNR > 3 dB: +25%
+- Peak prominence > 0.5: +25%
+- Valid RR count > 10: +25%
+- Motion score < 0.3: +25%
+            </div>
+        </div>
+
+        <!-- HRV Section -->
+        <div class="section" id="hrv">
+            <h2>
+                <span class="material-icons">timeline</span>
+                Heart Rate Variability (HRV)
+            </h2>
+
+            <h3>What is HRV?</h3>
+            <p>
+                HRV measures the variation in time between heartbeats. Higher HRV generally indicates:
+            </p>
+            <ul class="step-list">
+                <li>Better cardiovascular fitness</li>
+                <li>Lower stress levels</li>
+                <li>Better autonomic nervous system balance</li>
+                <li>Greater physiological resilience</li>
+            </ul>
+
+            <h3>RMSSD Calculation</h3>
+            <p>
+                Root Mean Square of Successive Differences (RMSSD) is the most common time-domain HRV metric:
+            </p>
+
+            <div class="formula-box">
+RMSSD = √(1/(N-1) × Σ(RRᵢ₊₁ - RRᵢ)²)
+
+Where:
+- RRᵢ = Time interval between successive R-peaks (in ms)
+- N = Number of RR intervals
+            </div>
+
+            <h3>Peak Detection Algorithm</h3>
+            <div class="code-block">
+// 1. Calculate R-R intervals (time between peaks)
+rrIntervals = []
+for (i = 1; i < peaks.length; i++) {
+    interval = peaks[i].time - peaks[i-1].time
+    rrIntervals.push(interval * 1000)  // Convert to milliseconds
+}
+
+// 2. Filter outliers (physiologically invalid intervals)
+validIntervals = rrIntervals.filter(rr =>
+    rr > 300 && rr < 2000  // 30-200 BPM range
+)
+
+// 3. Calculate successive differences
+differences = []
+for (i = 1; i < validIntervals.length; i++) {
+    diff = validIntervals[i] - validIntervals[i-1]
+    differences.push(diff)
+}
+
+// 4. Calculate RMSSD
+squaredDiffs = differences.map(d => d * d)
+meanSquaredDiff = average(squaredDiffs)
+RMSSD = Math.sqrt(meanSquaredDiff)
+
+// 5. Clamp to reasonable range
+HRV = clamp(RMSSD, 15, 100)  // milliseconds
+            </div>
+
+            <h3>Normal HRV Ranges (RMSSD)</h3>
+            <table class="accuracy-table">
+                <tr>
+                    <th>Population</th>
+                    <th>Typical Range</th>
+                    <th>Notes</th>
+                </tr>
+                <tr>
+                    <td>Healthy Adults</td>
+                    <td>20-80 ms</td>
+                    <td>Varies with age and fitness</td>
+                </tr>
+                <tr>
+                    <td>Athletes</td>
+                    <td>50-100 ms</td>
+                    <td>Higher is better</td>
+                </tr>
+                <tr>
+                    <td>Stressed/Unfit</td>
+                    <td>10-30 ms</td>
+                    <td>Lower indicates strain</td>
+                </tr>
+                <tr>
+                    <td>Age Factor</td>
+                    <td>-3-5% per decade</td>
+                    <td>Natural decline with age</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Respiratory Rate Section -->
+        <div class="section" id="respiratory">
+            <h2>
+                <span class="material-icons">air</span>
+                Respiratory Rate Detection
+            </h2>
+
+            <h3>Respiratory Signal Sources</h3>
+
+            <h4>1. Respiratory Sinus Arrhythmia (RSA)</h4>
+            <p>
+                Heart rate naturally increases during inhalation and decreases during exhalation.
+                This modulation appears as a low-frequency component (0.15-0.4 Hz) in the HRV signal.
+            </p>
+
+            <h4>2. Baseline Wandering</h4>
+            <p>
+                Breathing causes thoracic pressure changes that affect venous return,
+                creating slow oscillations in the PPG baseline.
+            </p>
+
+            <h3>Extraction Method</h3>
+            <div class="code-block">
+// Extract respiratory rate from PPG or HRV signal
+function extractRespiratoryRate(signal) {
+    // Apply bandpass filter (0.15-0.4 Hz for 9-24 breaths/min)
+    filtered = bandpassFilter(signal, 0.15, 0.4);
+
+    // Compute FFT
+    spectrum = FFT(filtered);
+
+    // Find peak in respiratory frequency range
+    peak_freq = findMaxPower(spectrum, 0.15, 0.4);
+
+    // Convert to breaths per minute
+    respiratory_rate = peak_freq * 60;
+
+    return respiratory_rate;
+}
+            </div>
+
+            <h3>Normal Respiratory Rates</h3>
+            <table class="accuracy-table">
+                <tr>
+                    <th>Category</th>
+                    <th>Rate (breaths/min)</th>
+                </tr>
+                <tr>
+                    <td>Resting Adult</td>
+                    <td>12-20</td>
+                </tr>
+                <tr>
+                    <td>During Exercise</td>
+                    <td>20-30+</td>
+                </tr>
+                <tr>
+                    <td>Meditation/Sleep</td>
+                    <td>8-12</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Stress Level Section -->
+        <div class="section" id="stress">
+            <h2>
+                <span class="material-icons">psychology</span>
+                Stress Level Assessment
+            </h2>
+
+            <h3>Physiological Basis</h3>
+            <p>
+                Stress activates the sympathetic nervous system, causing measurable changes in:
+            </p>
+            <ul class="step-list">
+                <li>Decreased HRV (reduced vagal tone)</li>
+                <li>Increased heart rate</li>
+                <li>Altered breathing patterns</li>
+                <li>Changes in peripheral blood flow</li>
+            </ul>
+
+            <h3>Stress Indicators</h3>
+            <table class="accuracy-table">
+                <tr>
+                    <th>Metric</th>
+                    <th>Low Stress</th>
+                    <th>Medium Stress</th>
+                    <th>High Stress</th>
+                </tr>
+                <tr>
+                    <td>HRV (RMSSD)</td>
+                    <td>&gt; 50 ms</td>
+                    <td>30-50 ms</td>
+                    <td>&lt; 30 ms</td>
+                </tr>
+                <tr>
+                    <td>Heart Rate</td>
+                    <td>60-70 BPM</td>
+                    <td>70-85 BPM</td>
+                    <td>&gt; 85 BPM</td>
+                </tr>
+                <tr>
+                    <td>Respiratory Rate</td>
+                    <td>12-16 br/min</td>
+                    <td>16-20 br/min</td>
+                    <td>&gt; 20 br/min</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Demographics Section -->
+        <div class="section" id="demographics">
+            <h2>
+                <span class="material-icons">face</span>
+                Demographics & Skin Tone Analysis
+            </h2>
+
+            <h3>Face Detection: MediaPipe Face Mesh</h3>
+            <p>
+                Using Google's MediaPipe to detect 468 3D facial landmarks in real-time:
+            </p>
+
+            <div class="code-block">
+// MediaPipe configuration
+const faceMesh = new FaceMesh({
+    maxNumFaces: 1,
+    refineLandmarks: true,  // Enhanced accuracy for iris
+    minDetectionConfidence: 0.5,
+    minTrackingConfidence: 0.5
+});
+            </div>
+
+            <h3>Age & Gender Estimation</h3>
+            <p>Using Face-API.js (Vladimir Mandic fork) with pre-trained neural networks:</p>
+
+            <div class="biomarker-card">
+                <h4>Age Estimation</h4>
+                <ul>
+                    <li>Architecture: ResNet-50 backbone</li>
+                    <li>Training data: IMDB-WIKI dataset (500k+ faces)</li>
+                    <li>Accuracy: Mean Absolute Error ±3.5 years</li>
+                </ul>
+            </div>
+
+            <div class="biomarker-card">
+                <h4>Gender Classification</h4>
+                <ul>
+                    <li>Architecture: MobileNetV2</li>
+                    <li>Binary classification (male/female)</li>
+                    <li>Training accuracy: 96.8%</li>
+                </ul>
+            </div>
+
+            <h3>Skin Tone Analysis (ITA Method)</h3>
+
+            <h4>ITA Calculation</h4>
+            <div class="formula-box">
+ITA° = [Arc Tangent((L* - 50) / b*)] × (180 / π)
+
+Where:
+- L* = Lightness in CIELAB color space (0-100)
+- b* = Yellow-blue axis (-128 to +127)
+
+Classification:
+Very Light: ITA > 55°
+Light:      41° < ITA ≤ 55°
+Intermediate: 28° < ITA ≤ 41°
+Tan:        10° < ITA ≤ 28°
+Brown:      -30° < ITA ≤ 10°
+Dark:       ITA ≤ -30°
+            </div>
+
+            <h4>Fitzpatrick Scale Mapping</h4>
+            <div class="code-block">
+function itaToFitzpatrick(ita) {
+    if (ita > 55)  return "Type I";   // Always burns, never tans
+    if (ita > 41)  return "Type II";  // Usually burns, tans minimally
+    if (ita > 28)  return "Type III"; // Sometimes burns, tans uniformly
+    if (ita > 10)  return "Type IV";  // Burns minimally, tans well
+    if (ita > -30) return "Type V";   // Rarely burns, tans deeply
+    return "Type VI";                  // Never burns, deeply pigmented
+}
+            </div>
+        </div>
+
+        <!-- Technical Implementation Section -->
+        <div class="section" id="technical">
+            <h2>
+                <span class="material-icons">code</span>
+                Technical Implementation Details
+            </h2>
+
+            <h3>System Architecture</h3>
+            <div class="code-block">
+Class: BiomarkerAnalyzer
+├── Camera Management
+│   ├── getUserMedia() - Access camera stream
+│   └── setupCamera() - Configure video parameters
+│
+├── Face Detection Pipeline
+│   ├── MediaPipe Face Mesh - 468 landmarks @ 30 FPS
+│   ├── Face-API.js - Demographics @ 0.5 FPS
+│   └── Landmark smoothing - 5-frame weighted average
+│
+├── Signal Processing
+│   ├── ROI extraction - Green channel averaging
+│   ├── Detrending - Linear regression removal
+│   ├── Filtering - Butterworth bandpass (0.5-3.0 Hz)
+│   └── FFT analysis - Frequency domain conversion
+│
+└── Visualization
+    ├── Canvas overlay - Real-time face mesh
+    └── Chart.js - Signal plots
+            </div>
+
+            <h3>Buffer Management</h3>
+            <div class="code-block">
+// Circular buffer for PPG signal
+// Typical: 150 frames (5 seconds at 30 FPS)
+ppgBuffer = new Float32Array(150);
+
+// Store green channel values over time
+ppgBuffer[index] = weightedGreenValue;
+index = (index + 1) % bufferSize;
+            </div>
+
+            <h3>Performance Optimizations</h3>
+            <ul class="step-list">
+                <li>
+                    <strong>WebAssembly Acceleration</strong>
+                    MediaPipe uses WASM for CPU-intensive landmark detection, achieving 30+ FPS on mobile devices
+                </li>
+                <li>
+                    <strong>GPU Delegation</strong>
+                    Face mesh rendering uses WebGL for hardware acceleration
+                </li>
+                <li>
+                    <strong>Adaptive Quality</strong>
+                    Dynamically adjusts processing based on device capabilities
+                </li>
+            </ul>
+        </div>
+
+        <!-- Accuracy Section -->
+        <div class="section" id="accuracy">
+            <h2>
+                <span class="material-icons">analytics</span>
+                Accuracy & Limitations
+            </h2>
+
+            <h3>Typical Accuracy (compared to medical devices)</h3>
+            <table class="accuracy-table">
+                <tr>
+                    <th>Biomarker</th>
+                    <th>Accuracy</th>
+                    <th>Requirements</th>
+                </tr>
+                <tr>
+                    <td>Heart Rate</td>
+                    <td>±2-3 BPM</td>
+                    <td>Good lighting, minimal movement, 5+ seconds</td>
+                </tr>
+                <tr>
+                    <td>HRV (RMSSD)</td>
+                    <td>±5-10 ms</td>
+                    <td>Good lighting, minimal movement, 5+ seconds</td>
+                </tr>
+                <tr>
+                    <td>Respiratory Rate</td>
+                    <td>±2-3 br/min</td>
+                    <td>Good lighting, 10+ seconds</td>
+                </tr>
+            </table>
+
+            <h3>Factors Affecting Accuracy</h3>
+
+            <div class="biomarker-card">
+                <h4>Environmental Factors</h4>
+                <ul>
+                    <li><strong>Lighting:</strong> Consistent, bright lighting (200-500 lux)</li>
+                    <li><strong>Distance:</strong> 30-100cm from camera optimal</li>
+                    <li><strong>Camera quality:</strong> Minimum 720p @ 30 FPS</li>
+                    <li><strong>Motion:</strong> Head movement reduces accuracy</li>
+                </ul>
+            </div>
+
+            <div class="biomarker-card">
+                <h4>Subject Factors</h4>
+                <ul>
+                    <li><strong>Skin tone:</strong> Works across all skin tones</li>
+                    <li><strong>Facial hair:</strong> May reduce signal in cheek regions</li>
+                    <li><strong>Makeup:</strong> Heavy foundation can attenuate signal</li>
+                    <li><strong>Age:</strong> Elderly may have weaker signals</li>
+                </ul>
+            </div>
+
+            <div class="warning-box">
+                <h4>
+                    <span class="material-icons">warning</span>
+                    Important Limitations
+                </h4>
+                <ul>
+                    <li>Not suitable for medical diagnosis or treatment decisions</li>
+                    <li>Cannot detect arrhythmias or structural heart conditions</li>
+                    <li>Accuracy decreases during exercise or movement</li>
+                    <li>Should not replace professional medical monitoring</li>
+                    <li>For educational and wellness purposes only</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- References Section -->
+        <div class="section" id="references">
+            <h2>
+                <span class="material-icons">library_books</span>
+                Scientific References & Open Source
+            </h2>
+
+            <div class="reference-list">
+                <h4>Classic Foundations</h4>
+                <ul>
+                    <li>
+                        <strong>PPG Principle:</strong> Verkruysse et al. (2008) - "Remote plethysmographic imaging using ambient light"
+                        <br><a href="https://doi.org/10.1364/OE.16.021434" target="_blank" style="color: #00d4ff;">https://doi.org/10.1364/OE.16.021434</a>
+                    </li>
+                    <li>
+                        <strong>Green Channel:</strong> de Haan & Jeanne (2013) - "Robust pulse rate from chrominance-based rPPG"
+                        <br><a href="https://doi.org/10.1109/TBME.2013.2266196" target="_blank" style="color: #00d4ff;">https://doi.org/10.1109/TBME.2013.2266196</a>
+                    </li>
+                    <li>
+                        <strong>HRV Standards:</strong> Task Force (1996) - "Heart rate variability: Standards of measurement"
+                        <br><a href="https://www.ahajournals.org/doi/10.1161/01.CIR.93.5.1043" target="_blank" style="color: #00d4ff;">https://www.ahajournals.org/doi/10.1161/01.CIR.93.5.1043</a>
+                    </li>
+                    <li>
+                        <strong>Signal Processing:</strong> Wang et al. (2016) - "Algorithmic Principles of Remote PPG"
+                        <br><a href="https://doi.org/10.1109/TBME.2016.2609282" target="_blank" style="color: #00d4ff;">https://doi.org/10.1109/TBME.2016.2609282</a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="reference-list">
+                <h4>Recent Research (2023-2025)</h4>
+                <ul>
+                    <li>
+                        <strong>Deep Learning Review (2024):</strong> "Deep learning and remote photoplethysmography powered advancements in contactless physiological measurement"
+                        <br><a href="https://www.frontiersin.org/journals/bioengineering-and-biotechnology/articles/10.3389/fbioe.2024.1420100/full" target="_blank" style="color: #00d4ff;">Frontiers in Bioengineering</a>
+                    </li>
+                    <li>
+                        <strong>Comprehensive Review (2024):</strong> "A comprehensive review of heart rate measurement using remote photoplethysmography and deep learning"
+                        <br><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12181896/" target="_blank" style="color: #00d4ff;">PMC12181896</a>
+                    </li>
+                    <li>
+                        <strong>Face Regions Study (2025):</strong> "The role of face regions in remote photoplethysmography for contactless heart rate monitoring"
+                        <br><a href="https://www.nature.com/articles/s41746-025-01814-9" target="_blank" style="color: #00d4ff;">Nature npj Digital Medicine</a>
+                        <br><em>Key Finding: Forehead and cheeks provide best accuracy (MAE < 1.0 BPM with ML)</em>
+                    </li>
+                    <li>
+                        <strong>Phase-Shifted Method (2024):</strong> "Phase-shifted remote photoplethysmography for estimating heart rate and blood pressure"
+                        <br><a href="https://arxiv.org/html/2401.04560v1" target="_blank" style="color: #00d4ff;">ArXiv 2401.04560</a>
+                    </li>
+                    <li>
+                        <strong>HRV from Facial Video (2023):</strong> "Robust Heart Rate Variability Measurement from Facial Videos"
+                        <br><a href="https://www.mdpi.com/2306-5354/10/7/851" target="_blank" style="color: #00d4ff;">MDPI Bioengineering</a>
+                    </li>
+                    <li>
+                        <strong>Transformer Architecture (2024):</strong> "Remote physiological signal recovery with efficient spatio-temporal modeling"
+                        <br><a href="https://www.frontiersin.org/journals/physiology/articles/10.3389/fphys.2024.1428351/full" target="_blank" style="color: #00d4ff;">Frontiers in Physiology</a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="reference-list">
+                <h4>Open Source Libraries</h4>
+                <ul>
+                    <li>
+                        <strong>MediaPipe Face Mesh</strong> - Apache License 2.0
+                        <br>468 3D face landmarks with iris tracking
+                        <br><a href="https://developers.google.com/mediapipe/solutions/vision/face_landmarker" target="_blank" style="color: #00d4ff;">Official Docs</a> |
+                        <a href="https://github.com/google-ai-edge/mediapipe" target="_blank" style="color: #00d4ff;">GitHub</a> |
+                        <a href="https://www.npmjs.com/package/@mediapipe/face_mesh" target="_blank" style="color: #00d4ff;">NPM</a>
+                    </li>
+                    <li>
+                        <strong>Face-API.js (Vladimir Mandic)</strong> - MIT License
+                        <br>Age, gender, emotion, and expression detection
+                        <br><a href="https://github.com/vladmandic/human" target="_blank" style="color: #00d4ff;">GitHub</a> |
+                        <a href="https://www.npmjs.com/package/@vladmandic/face-api" target="_blank" style="color: #00d4ff;">NPM</a>
+                    </li>
+                    <li>
+                        <strong>Chart.js</strong> - MIT License
+                        <br>Data visualization for PPG signals and trends
+                        <br><a href="https://www.chartjs.org/docs/latest/" target="_blank" style="color: #00d4ff;">Official Docs</a> |
+                        <a href="https://github.com/chartjs/Chart.js" target="_blank" style="color: #00d4ff;">GitHub</a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="info-box">
+                <h4>
+                    <span class="material-icons">info</span>
+                    Additional Resources
+                </h4>
+                <p>For complete methodology details, see:</p>
+                <ul>
+                    <li>
+                        <strong>Full Heart Rate & HRV Methodology:</strong>
+                        <a href="https://fivelidz.com/projects/camera-biomarkers/HEART_RATE_HRV_METHODOLOGY.md" target="_blank" style="color: #00d4ff;">
+                            Detailed Technical Guide
+                        </a>
+                    </li>
+                    <li>
+                        <strong>Open Source Licenses:</strong>
+                        <a href="https://fivelidz.com/projects/camera-biomarkers/OPEN_SOURCE_LICENSES.md" target="_blank" style="color: #00d4ff;">
+                            Complete Attribution
+                        </a>
+                    </li>
+                    <li>
+                        <strong>Latest rPPG Research:</strong>
+                        <a href="https://pubmed.ncbi.nlm.nih.gov/?term=remote+photoplethysmography" target="_blank" style="color: #00d4ff;">
+                            PubMed
+                        </a> |
+                        <a href="https://ieeexplore.ieee.org/search/searchresult.jsp?newsearch=true&queryText=rPPG" target="_blank" style="color: #00d4ff;">
+                            IEEE Xplore
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Back to Top Button -->
+        <button class="back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+            <span class="material-icons">arrow_upward</span>
+        </button>
+    </div>
+</body>
+</html>
