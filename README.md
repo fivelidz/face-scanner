@@ -32,7 +32,7 @@ flowchart LR
 4. **Spectral analysis** — FFT with peak detection (plus inter-beat-interval peak verification, 0.5 s min distance) converts the signal to BPM; RMSSD-style interval analysis derives HRV.
 5. **Quality gate** — signal-strength scoring drives a live confidence label. Poor lighting/motion → the app says so instead of inventing a number.
 
-**Measured accuracy:** ±2–3 BPM heart rate and ±5–10 ms RMSSD HRV under good conditions — degrading honestly with lighting, motion and camera compression. Full tier table and methodology: [`accuracy.html`](accuracy.html) · [`HEART_RATE_HRV_METHODOLOGY.md`](HEART_RATE_HRV_METHODOLOGY.md).
+**Accuracy:** the ±2–3 BPM / ±5–10 ms RMSSD figures are literature values for rPPG pipelines of this type — *not* independently certified measurements of this implementation. The app's own honesty mechanism is the confidence gate: it labels every reading (roughly 85%+ / 70–85% / <50% trust tiers) and downgrades itself when the signal is weak. Full tier table and methodology: [`accuracy.html`](accuracy.html) · [`HEART_RATE_HRV_METHODOLOGY.md`](HEART_RATE_HRV_METHODOLOGY.md).
 
 ## Run it
 
