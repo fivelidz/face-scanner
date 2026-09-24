@@ -56,6 +56,7 @@ Allow camera access when prompted. A mobile-friendly variant is included (`mobil
 | `accuracy.html` | Confidence tiers and honest conditions table |
 | `export.html` | Session data export |
 | `OPEN_SOURCE_LICENSES.md` | Third-party notices (MediaPipe Face Mesh, FFT) |
+| `MODELS.md` | **Model inventory** — every model this analyzer uses (CDN-loaded) + the full Volkus demographic-scan model set (age/gender/liveness/ethnicity ONNX, hashes, lineage) and why the binaries aren't on GitHub |
 
 ## Privacy
 
