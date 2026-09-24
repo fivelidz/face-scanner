@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Face Scanner — camera biomarker analyzer (rPPG)</title>
+<meta name="description" content="Camera-based biomarker analyzer: heart rate, HRV and stress from facial video — fully in-browser, no uploads. By Qalarc.">
+<style>
+body{margin:0;font:16px/1.6 system-ui,sans-serif;background:#0b0e14;color:#d7dce5;display:flex;min-height:100vh;align-items:center;justify-content:center}
+main{max-width:640px;padding:40px 24px;text-align:center}
+h1{color:#f2f5fa;font-size:30px;margin:0 0 8px}
+p.by{color:#9fe0b7;margin:0 0 28px}
+.grid{display:grid;gap:14px}
+a.card{display:block;padding:22px;border:1px solid #2a3242;border-radius:12px;background:#10151f;color:#d7dce5;text-decoration:none;text-align:left}
+a.card:hover{border-color:#7ab8ff}
+a.card b{display:block;font-size:19px;color:#f2f5fa;margin-bottom:4px}
+a.card span{font-size:14px;color:#8fa0b5}
+footer{margin-top:28px;font-size:13px;color:#8fa0b5}
+a{color:#7ab8ff}
+</style>
+</head>
+<body>
+<main>
+<h1>Face Scanner</h1>
+<p class="by">Camera biomarker analyzer by <a href="https://qalarc.com">Qalarc</a> — rPPG heart rate, HRV &amp; stress from facial video. Runs entirely in your browser: no uploads, no accounts, no cloud.</p>
+<div class="grid">
+<a class="card" href="analyzer-full.html"><b>🖥️ Desktop analyzer</b><span>Full pipeline — ROI viewer, live FFT, confidence tiers, session export</span></a>
+<a class="card" href="mobile-analyzer.html"><b>📱 Mobile analyzer</b><span>Phone front-camera variant, condensed UI</span></a>
+</div>
+<footer>Camera permission required — frames never leave the device. <a href="https://github.com/fivelidz/face-scanner">Source &amp; docs</a> · <a href="https://github.com/fivelidz/face-scanner/blob/main/MODELS.md">Model inventory</a> · Not a medical device.</footer>
+</main>
+</body>
+</html>
